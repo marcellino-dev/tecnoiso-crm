@@ -1,0 +1,91 @@
+# ==========================
+# Dependências
+# ==========================
+node_modules/
+
+# ==========================
+# Build
+# ==========================
+dist/
+dist-electron/
+build/
+out/
+release/
+
+# ==========================
+# Logs
+# ==========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================
+# Ambiente
+# ==========================
+.env
+.env.*
+!.env.example
+
+# ==========================
+# Vite
+# ==========================
+.vite/
+
+# ==========================
+# Electron
+# ==========================
+*.asar
+
+# ==========================
+# Sistema Operacional
+# ==========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================
+# VS Code
+# ==========================
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# ==========================
+# IDEs
+# ==========================
+.idea/
+*.iml
+
+# ==========================
+# Arquivos temporários
+# ==========================
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.orig
+
+# ==========================
+# Cache
+# ==========================
+.cache/
+.parcel-cache/
+.eslintcache
+
+# ==========================
+# Testes
+# ==========================
+coverage/
+
+# ==========================
+# Certificados
+# ==========================
+*.pem
+*.key
+*.crt

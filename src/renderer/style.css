@@ -1,0 +1,9 @@
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%;overflow:hidden}
+body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#1a1a1a;background:#fff}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+a{color:inherit}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:99px}
