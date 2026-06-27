@@ -1,9 +1,25 @@
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body,#root{height:100%;overflow:hidden}
-body{font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#1a1a1a;background:#fff}
-button{font-family:inherit;cursor:pointer}
-input,textarea{font-family:inherit}
-a{color:inherit}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:99px}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+html, body { height: 100%; overflow: hidden; margin: 0; padding: 0 }
+#root { height: 100%; overflow: hidden; display: flex; flex-direction: column }
+body { font-family:'Inter',system-ui,sans-serif; font-size:13px; color:#212121; background:#F0F2F5 }
+button { font-family:inherit; cursor:pointer }
+input,textarea,select { font-family:inherit }
+a { color:inherit }
+
+/* Scrollbar global fina */
+::-webkit-scrollbar { width:4px; height:4px }
+::-webkit-scrollbar-track { background:transparent }
+::-webkit-scrollbar-thumb { background:#D1D5DB; border-radius:99px }
+::-webkit-scrollbar-thumb:hover { background:#9CA3AF }
+
+/* Scrollbar para o board Kanban horizontal */
+.kanban-board::-webkit-scrollbar { height:6px }
+.kanban-board::-webkit-scrollbar-thumb { background:#D32F2F55; border-radius:99px }
+
+/* Animação de entrada do drawer */
+@keyframes slideIn {
+  from { transform:translateX(100%); opacity:0 }
+  to   { transform:translateX(0);    opacity:1 }
+}
