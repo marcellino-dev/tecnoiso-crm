@@ -131,20 +131,35 @@ function Toast({ msg, type = 'ok' }) {
   )
 }
 
+// ─── Helper: letra de coluna tipo Excel (0→A, 25→Z, 26→AA …) ─────────────────
+function colLetter(i) {
+  let s = ''; i++
+  while (i > 0) { i--; s = String.fromCharCode(65 + (i % 26)) + s; i = Math.floor(i / 26) }
+  return s
+}
+
 // ─── Visualizador de Arquivo Inline ──────────────────────────────────────────
 function FileViewer({ arq, onClose }) {
   const tipo = tipoArquivo(arq.nome_original, arq.tipo || '')
   const url  = arq.caminho_local
-  const [xlsxData, setXlsxData]     = useState(null)  // { sheets:[{name,rows}], active:0 }
+  const [xlsxData,    setXlsxData]    = useState(null)
   const [xlsxLoading, setXlsxLoading] = useState(false)
-  const [xlsxErr, setXlsxErr]       = useState(null)
+  const [xlsxErr,     setXlsxErr]     = useState(null)
   const [activeSheet, setActiveSheet] = useState(0)
+  const [freeze,      setFreeze]      = useState(true)   // congelar 1ª linha
+  const [showEmpty,   setShowEmpty]   = useState(false)  // mostrar linhas completamente vazias
 
-  // Carregar XLSX/CSV via SheetJS quando for planilha
+  // Fechar com Escape
+  useEffect(() => {
+    const handler = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  // Carregar XLSX/CSV via SheetJS
   useEffect(() => {
     if (tipo !== 'xlsx' && tipo !== 'csv') return
-    setXlsxLoading(true)
-    setXlsxErr(null)
+    setXlsxLoading(true); setXlsxErr(null); setActiveSheet(0)
 
     import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js')
       .then(() => {
@@ -152,130 +167,233 @@ function FileViewer({ arq, onClose }) {
         fetch(url)
           .then(r => r.arrayBuffer())
           .then(buf => {
-            const wb = XLSX.read(buf, { type: 'array', cellDates: true })
+            const wb = XLSX.read(buf, { type:'array', cellDates:true, cellStyles:true })
             const sheets = wb.SheetNames.map(name => {
               const ws = wb.Sheets[name]
-              const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
-              return { name, rows }
+              // sheet_to_json header:1 → array de arrays, defval:'' preenche células vazias
+              const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'', raw:false })
+              // Calcular largura máxima de colunas
+              const maxCols = rows.reduce((m, r) => Math.max(m, r.length), 0)
+              // Normalizar todas as linhas para ter o mesmo nº de colunas
+              const normRows = rows.map(r => {
+                const arr = [...r]
+                while (arr.length < maxCols) arr.push('')
+                return arr
+              })
+              return { name, rows: normRows, maxCols }
             })
             setXlsxData({ sheets })
-            setActiveSheet(0)
             setXlsxLoading(false)
           })
-          .catch(e => { setXlsxErr('Erro ao baixar o arquivo.'); setXlsxLoading(false) })
+          .catch(() => { setXlsxErr('Erro ao baixar o arquivo.'); setXlsxLoading(false) })
       })
-      .catch(() => { setXlsxErr('Erro ao carregar o leitor de planilhas.'); setXlsxLoading(false) })
+      .catch(() => { setXlsxErr('Erro ao carregar leitor de planilhas.'); setXlsxLoading(false) })
   }, [url, tipo])
 
-  const sheetAtual = xlsxData?.sheets?.[activeSheet]
+  const sheet = xlsxData?.sheets?.[activeSheet]
+
+  // Filtrar linhas: remove linhas 100% vazias se showEmpty=false
+  const rows = sheet
+    ? (showEmpty ? sheet.rows : sheet.rows.filter(r => r.some(c => c !== '')))
+    : []
+
+  // Largura mínima de célula (px) — planilhas largas ficam com barra horizontal
+  const CELL_MIN_W = 110
+
+  const isSpreadsheet = tipo === 'xlsx' || tipo === 'csv'
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.78)', zIndex:1100,
-      display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
-      {/* Barra superior */}
-      <div style={{ width:'min(96vw,1100px)', background:'#1C1C2E', padding:'10px 16px',
-        borderRadius:'12px 12px 0 0', display:'flex', alignItems:'center', gap:12,
-        borderBottom:'1px solid #333' }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.82)', zIndex:1100,
+      display:'flex', flexDirection:'column' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+
+      {/* ── Barra superior ── */}
+      <div style={{ background:'#1C1C2E', padding:'10px 16px', display:'flex',
+        alignItems:'center', gap:10, borderBottom:'1px solid #2d2d44', flexShrink:0 }}>
         <Ic n="file" s={15} c="#aaa"/>
         <span style={{ color:'#fff', fontSize:13, fontWeight:600, flex:1,
           overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
           {arq.nome_original}
         </span>
-        <span style={{ color:'#9ca3af', fontSize:11 }}>{fmtSz(arq.tamanho)}</span>
+        <span style={{ color:'#6b7280', fontSize:11, flexShrink:0 }}>{fmtSz(arq.tamanho)}</span>
+
+        {/* Opções só para planilha */}
+        {isSpreadsheet && xlsxData && (
+          <>
+            <button onClick={() => setFreeze(f => !f)}
+              title={freeze ? 'Descongelar cabeçalho' : 'Congelar cabeçalho'}
+              style={{ padding:'4px 10px', background: freeze ? '#1565C0' : '#37474F',
+                color:'#fff', border:'none', borderRadius:6, fontSize:11,
+                cursor:'pointer', fontFamily:'inherit', flexShrink:0 }}>
+              {freeze ? '🔒 Cabeçalho fixo' : '🔓 Cabeçalho livre'}
+            </button>
+            <button onClick={() => setShowEmpty(s => !s)}
+              title={showEmpty ? 'Ocultar linhas vazias' : 'Mostrar linhas vazias'}
+              style={{ padding:'4px 10px', background: showEmpty ? '#37474F' : '#23233a',
+                color: showEmpty ? '#fff' : '#9ca3af', border:'1px solid #444',
+                borderRadius:6, fontSize:11, cursor:'pointer', fontFamily:'inherit', flexShrink:0 }}>
+              {showEmpty ? 'Ocultar vazias' : 'Mostrar vazias'}
+            </button>
+          </>
+        )}
+
         <a href={url} download={arq.nome_original}
           style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 12px',
             background:'#1565C0', color:'#fff', borderRadius:7, fontSize:11,
-            fontWeight:600, textDecoration:'none' }}>
+            fontWeight:600, textDecoration:'none', flexShrink:0 }}>
           <Ic n="external" s={11} c="#fff"/> Download
         </a>
         <button onClick={onClose}
           style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px',
             background:'#37474F', color:'#fff', border:'none', borderRadius:7,
-            fontSize:11, cursor:'pointer', fontFamily:'inherit' }}>
+            fontSize:11, cursor:'pointer', fontFamily:'inherit', flexShrink:0 }}>
           <Ic n="x" s={11} c="#fff"/> Fechar
         </button>
       </div>
 
-      {/* Abas de planilha */}
-      {xlsxData && xlsxData.sheets.length > 1 && (
-        <div style={{ width:'min(96vw,1100px)', background:'#23233a', display:'flex',
-          gap:2, padding:'6px 12px 0', borderBottom:'1px solid #333', overflowX:'auto' }}>
+      {/* ── Abas de sheet — sempre visíveis quando planilha ── */}
+      {isSpreadsheet && xlsxData && (
+        <div style={{ background:'#16162a', display:'flex', gap:1, padding:'6px 12px 0',
+          borderBottom:'1px solid #2d2d44', overflowX:'auto', flexShrink:0,
+          scrollbarWidth:'thin' }}>
           {xlsxData.sheets.map((s, i) => (
             <button key={i} onClick={() => setActiveSheet(i)}
-              style={{ padding:'5px 14px', fontSize:11, fontWeight:600, border:'none',
+              style={{ padding:'5px 16px', fontSize:11, fontWeight:600, border:'none',
                 borderRadius:'6px 6px 0 0', cursor:'pointer', fontFamily:'inherit',
-                background: i === activeSheet ? '#fff' : 'transparent',
-                color: i === activeSheet ? '#111' : '#9ca3af', whiteSpace:'nowrap' }}>
-              {s.name}
+                flexShrink:0, whiteSpace:'nowrap', transition:'background .1s',
+                background: i === activeSheet ? '#fff' : '#23233a',
+                color:       i === activeSheet ? '#1a1a2e' : '#9ca3af',
+                borderBottom: i === activeSheet ? '2px solid #1565C0' : '2px solid transparent' }}>
+              📄 {s.name}
+              <span style={{ marginLeft:6, fontSize:9, opacity:.6 }}>
+                {s.rows.length}L × {s.maxCols}C
+              </span>
             </button>
           ))}
         </div>
       )}
 
-      {/* Conteúdo */}
-      <div style={{ width:'min(96vw,1100px)', background:'#fff',
-        borderRadius: xlsxData ? '0 0 12px 12px' : '0 0 12px 12px',
-        overflow:'hidden', display:'flex', flexDirection:'column',
-        maxHeight:'82vh', minHeight:400 }}>
+      {/* ── Área de conteúdo — ocupa todo o espaço restante ── */}
+      <div style={{ flex:1, minHeight:0, display:'flex', flexDirection:'column',
+        background:'#fff', overflow:'hidden' }}>
 
-        {/* PDF */}
+        {/* PDF — ocupa 100% */}
         {tipo === 'pdf' && (
           <iframe src={url} title={arq.nome_original}
-            style={{ width:'100%', height:'82vh', border:'none' }} />
+            style={{ width:'100%', height:'100%', border:'none', flex:1 }} />
         )}
 
         {/* Imagem */}
         {tipo === 'image' && (
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
-            background:'#111', height:'82vh' }}>
+          <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center',
+            background:'#111', overflow:'auto' }}>
             <img src={url} alt={arq.nome_original}
-              style={{ maxWidth:'100%', maxHeight:'82vh', objectFit:'contain' }} />
+              style={{ maxWidth:'100%', maxHeight:'100%', objectFit:'contain' }} />
           </div>
         )}
 
-        {/* XLSX / CSV */}
-        {(tipo === 'xlsx' || tipo === 'csv') && (
-          <div style={{ flex:1, overflow:'auto', background:'#fff' }}>
+        {/* XLSX / CSV — scroll em AMBAS as direções */}
+        {isSpreadsheet && (
+          <div style={{ flex:1, overflow:'auto', position:'relative' }}>
+
             {xlsxLoading && (
               <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
-                padding:60, color:'#6b7280', gap:10 }}>
-                <Ic n="refresh" s={18} c="#9ca3af"/> Carregando planilha...
+                height:'100%', color:'#6b7280', gap:10, fontSize:14 }}>
+                <Ic n="refresh" s={20} c="#9ca3af"/> Carregando planilha...
               </div>
             )}
+
             {xlsxErr && (
-              <div style={{ padding:40, textAlign:'center', color:'#DC2626' }}>
-                <Ic n="x" s={28} c="#DC2626"/>
-                <div style={{ marginTop:10 }}>{xlsxErr}</div>
+              <div style={{ display:'flex', flexDirection:'column', alignItems:'center',
+                justifyContent:'center', height:'100%', color:'#DC2626', gap:10 }}>
+                <Ic n="x" s={32} c="#DC2626"/>
+                <div style={{ fontSize:14 }}>{xlsxErr}</div>
               </div>
             )}
-            {sheetAtual && (
-              <table style={{ borderCollapse:'collapse', fontSize:12, minWidth:'100%', tableLayout:'auto' }}>
+
+            {sheet && rows.length === 0 && !xlsxLoading && (
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
+                height:'100%', color:'#9ca3af', fontSize:13 }}>
+                Planilha vazia
+              </div>
+            )}
+
+            {sheet && rows.length > 0 && (
+              <table style={{
+                borderCollapse:'collapse', fontSize:12,
+                tableLayout:'auto',
+                /* a tabela se expande para caber todo o conteúdo */
+                width:'max-content', minWidth:'100%',
+              }}>
+                {/* cabeçalho de letras de coluna (A, B, C…) */}
+                <thead>
+                  <tr>
+                    {/* canto superior esquerdo — índice de linha */}
+                    <th style={{
+                      position: freeze ? 'sticky' : 'static',
+                      top:0, left:0, zIndex: freeze ? 4 : 'auto',
+                      background:'#E8EAED', border:'1px solid #CCC',
+                      minWidth:42, width:42, padding:'4px 6px',
+                      fontSize:10, color:'#888', userSelect:'none', textAlign:'center',
+                    }}>#</th>
+                    {Array.from({ length: sheet.maxCols }).map((_, ci) => (
+                      <th key={ci} style={{
+                        position: freeze ? 'sticky' : 'static',
+                        top:0, zIndex: freeze ? 3 : 'auto',
+                        background:'#E8EAED', border:'1px solid #CCC',
+                        minWidth:CELL_MIN_W, padding:'4px 8px',
+                        fontSize:10, fontWeight:700, color:'#555',
+                        textAlign:'center', userSelect:'none', whiteSpace:'nowrap',
+                      }}>
+                        {colLetter(ci)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+
                 <tbody>
-                  {sheetAtual.rows.map((row, ri) => (
-                    <tr key={ri} style={{ background: ri === 0 ? '#F8F9FA' : ri % 2 === 0 ? '#FAFAFA' : '#fff' }}>
-                      {/* Número da linha */}
-                      <td style={{ padding:'4px 8px', borderRight:'1px solid #E5E7EB',
-                        borderBottom:'1px solid #E5E7EB', color:'#9ca3af', fontSize:10,
-                        fontWeight:600, textAlign:'right', userSelect:'none',
-                        background: ri === 0 ? '#F0F0F0' : '#F8F8F8', minWidth:36 }}>
-                        {ri === 0 ? '#' : ri}
-                      </td>
-                      {Array.isArray(row) && row.map((cell, ci) => (
-                        ri === 0
-                          ? <th key={ci} style={{ padding:'6px 12px', border:'1px solid #D1D5DB',
-                              background:'#F3F4F6', fontWeight:700, color:'#374151',
-                              whiteSpace:'nowrap', textAlign:'left', position:'sticky', top:0, zIndex:1 }}>
-                              {cell !== '' ? cell : <span style={{ color:'#D1D5DB' }}>—</span>}
-                            </th>
-                          : <td key={ci} style={{ padding:'5px 12px', border:'1px solid #E5E7EB',
-                              whiteSpace:'nowrap', color: cell === '' ? '#D1D5DB' : '#212121' }}>
-                              {cell instanceof Date
-                                ? cell.toLocaleDateString('pt-BR')
-                                : cell !== '' ? String(cell) : '—'}
+                  {rows.map((row, ri) => {
+                    const isFirstDataRow = ri === 0
+                    return (
+                      <tr key={ri} style={{
+                        background: isFirstDataRow ? '#EEF2FF'
+                          : ri % 2 === 0 ? '#FAFAFA' : '#fff'
+                      }}>
+                        {/* Número de linha — frozen à esquerda */}
+                        <td style={{
+                          position:'sticky', left:0, zIndex:1,
+                          background: isFirstDataRow ? '#DDE3F8' : ri % 2 === 0 ? '#F0F0F0' : '#F8F8F8',
+                          border:'1px solid #DDD', padding:'4px 8px',
+                          fontSize:10, color:'#999', fontWeight:600,
+                          textAlign:'right', userSelect:'none', minWidth:42,
+                        }}>
+                          {ri + 1}
+                        </td>
+
+                        {row.map((cell, ci) => {
+                          const vazio = cell === '' || cell === null || cell === undefined
+                          return (
+                            <td key={ci} style={{
+                              border:'1px solid #E0E0E0',
+                              padding:'5px 10px',
+                              whiteSpace:'nowrap',
+                              minWidth:CELL_MIN_W,
+                              maxWidth:320,
+                              overflow:'hidden',
+                              textOverflow:'ellipsis',
+                              color: isFirstDataRow ? '#1a1a6e' : vazio ? '#ccc' : '#212121',
+                              fontWeight: isFirstDataRow ? 700 : 400,
+                              background: isFirstDataRow ? '#EEF2FF' : undefined,
+                              verticalAlign:'top',
+                            }}
+                            title={vazio ? '' : String(cell)}>
+                              {vazio ? '' : String(cell)}
                             </td>
-                      ))}
-                    </tr>
-                  ))}
+                          )
+                        })}
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             )}
@@ -284,8 +402,8 @@ function FileViewer({ arq, onClose }) {
 
         {/* Outros formatos */}
         {tipo === 'externo' && (
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
-            background:'#111', height:'82vh' }}>
+          <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center',
+            background:'#111' }}>
             <div style={{ textAlign:'center', color:'#6b7280', padding:48 }}>
               <Ic n="file" s={48} c="#4b5563"/>
               <div style={{ marginTop:14, fontSize:14, color:'#9ca3af' }}>
@@ -301,6 +419,23 @@ function FileViewer({ arq, onClose }) {
           </div>
         )}
       </div>
+
+      {/* ── Rodapé de info (só planilha) ── */}
+      {isSpreadsheet && sheet && !xlsxLoading && (
+        <div style={{ background:'#1C1C2E', padding:'5px 16px', display:'flex',
+          alignItems:'center', gap:16, fontSize:10, color:'#6b7280', flexShrink:0 }}>
+          <span>📊 <strong style={{ color:'#9ca3af' }}>{sheet.name}</strong></span>
+          <span>{rows.length} linhas × {sheet.maxCols} colunas</span>
+          {!showEmpty && sheet.rows.length !== rows.length && (
+            <span style={{ color:'#4b5563' }}>
+              ({sheet.rows.length - rows.length} linhas vazias ocultas)
+            </span>
+          )}
+          <span style={{ marginLeft:'auto', color:'#4b5563' }}>
+            Scroll horizontal e vertical disponível · ESC para fechar
+          </span>
+        </div>
+      )}
     </div>
   )
 }

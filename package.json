@@ -13,10 +13,22 @@
   "build": {
     "appId": "com.tecnoiso.crm",
     "productName": "Tecnoiso CRM",
-    "directories": { "output": "dist-electron" },
-    "files": ["dist/**/*", "src/main/**/*"],
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "src/main/**/*"
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "public/icon.ico"
     },
     "nsis": {
@@ -25,7 +37,9 @@
       "createDesktopShortcut": true,
       "shortcutName": "Tecnoiso CRM"
     },
-    "linux": { "target": "AppImage" }
+    "linux": {
+      "target": "AppImage"
+    }
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
