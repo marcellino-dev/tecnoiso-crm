@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from './supabase.js'
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
@@ -146,8 +146,11 @@ function FileViewer({ arq, onClose }) {
   const [xlsxLoading, setXlsxLoading] = useState(false)
   const [xlsxErr,     setXlsxErr]     = useState(null)
   const [activeSheet, setActiveSheet] = useState(0)
-  const [freeze,      setFreeze]      = useState(true)   // congelar 1ª linha
-  const [showEmpty,   setShowEmpty]   = useState(false)  // mostrar linhas completamente vazias
+  const [freeze,      setFreeze]      = useState(true)
+  const [showEmpty,   setShowEmpty]   = useState(false)
+
+  // Referência para o container de scroll
+  const scrollContainerRef = useRef(null)
 
   // Fechar com Escape
   useEffect(() => {
@@ -170,11 +173,8 @@ function FileViewer({ arq, onClose }) {
             const wb = XLSX.read(buf, { type:'array', cellDates:true, cellStyles:true })
             const sheets = wb.SheetNames.map(name => {
               const ws = wb.Sheets[name]
-              // sheet_to_json header:1 → array de arrays, defval:'' preenche células vazias
               const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'', raw:false })
-              // Calcular largura máxima de colunas
               const maxCols = rows.reduce((m, r) => Math.max(m, r.length), 0)
-              // Normalizar todas as linhas para ter o mesmo nº de colunas
               const normRows = rows.map(r => {
                 const arr = [...r]
                 while (arr.length < maxCols) arr.push('')
@@ -192,15 +192,26 @@ function FileViewer({ arq, onClose }) {
 
   const sheet = xlsxData?.sheets?.[activeSheet]
 
-  // Filtrar linhas: remove linhas 100% vazias se showEmpty=false
   const rows = sheet
     ? (showEmpty ? sheet.rows : sheet.rows.filter(r => r.some(c => c !== '')))
     : []
 
-  // Largura mínima de célula (px) — planilhas largas ficam com barra horizontal
   const CELL_MIN_W = 110
 
   const isSpreadsheet = tipo === 'xlsx' || tipo === 'csv'
+
+  // ─── Funções para rolagem ──────────────────────────────────────────────
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' })
+    }
+  }
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' })
+    }
+  }
 
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.82)', zIndex:1100,
@@ -217,7 +228,6 @@ function FileViewer({ arq, onClose }) {
         </span>
         <span style={{ color:'#6b7280', fontSize:11, flexShrink:0 }}>{fmtSz(arq.tamanho)}</span>
 
-        {/* Opções só para planilha */}
         {isSpreadsheet && xlsxData && (
           <>
             <button onClick={() => setFreeze(f => !f)}
@@ -251,7 +261,7 @@ function FileViewer({ arq, onClose }) {
         </button>
       </div>
 
-      {/* ── Abas de sheet — sempre visíveis quando planilha ── */}
+      {/* ── Abas de sheet ── */}
       {isSpreadsheet && xlsxData && (
         <div style={{ background:'#16162a', display:'flex', gap:1, padding:'6px 12px 0',
           borderBottom:'1px solid #2d2d44', overflowX:'auto', flexShrink:0,
@@ -273,11 +283,11 @@ function FileViewer({ arq, onClose }) {
         </div>
       )}
 
-      {/* ── Área de conteúdo — ocupa todo o espaço restante ── */}
+      {/* ── Área de conteúdo ── */}
       <div style={{ flex:1, minHeight:0, display:'flex', flexDirection:'column',
-        background:'#fff', overflow:'hidden' }}>
+        background:'#fff', overflow:'hidden', position:'relative' }}>
 
-        {/* PDF — ocupa 100% */}
+        {/* PDF */}
         {tipo === 'pdf' && (
           <iframe src={url} title={arq.nome_original}
             style={{ width:'100%', height:'100%', border:'none', flex:1 }} />
@@ -292,112 +302,224 @@ function FileViewer({ arq, onClose }) {
           </div>
         )}
 
-        {/* XLSX / CSV — scroll em AMBAS as direções */}
+        {/* XLSX / CSV — com scroll customizado e botões de navegação */}
         {isSpreadsheet && (
-          <div style={{ flex:1, overflow:'auto', position:'relative' }}>
+          <>
+            {/* ── Container com scroll ── */}
+            <div ref={scrollContainerRef}
+              style={{
+                flex:1,
+                overflow:'auto',
+                position:'relative',
+                // ─── SCROLLBAR PERSONALIZADA (visível com cores verdes, branca e cinza) ───
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#4CAF50 #E8E8E8',
+              }}
+            >
+              {/* WebKit scrollbar styles via style tag */}
+              <style>{`
+                /* Para Chrome, Safari e Edge */
+                .file-viewer-scroll::-webkit-scrollbar {
+                  width: 10px;
+                  height: 12px;
+                }
+                .file-viewer-scroll::-webkit-scrollbar-track {
+                  background: #E8E8E8;
+                  border-radius: 6px;
+                }
+                .file-viewer-scroll::-webkit-scrollbar-thumb {
+                  background: #4CAF50;
+                  border-radius: 6px;
+                  border: 2px solid #FFFFFF;
+                }
+                .file-viewer-scroll::-webkit-scrollbar-thumb:hover {
+                  background: #388E3C;
+                }
+                .file-viewer-scroll::-webkit-scrollbar-corner {
+                  background: #E8E8E8;
+                }
+              `}</style>
 
-            {xlsxLoading && (
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
-                height:'100%', color:'#6b7280', gap:10, fontSize:14 }}>
-                <Ic n="refresh" s={20} c="#9ca3af"/> Carregando planilha...
-              </div>
-            )}
+              {xlsxLoading && (
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
+                  height:'100%', color:'#6b7280', gap:10, fontSize:14 }}>
+                  <Ic n="refresh" s={20} c="#9ca3af"/> Carregando planilha...
+                </div>
+              )}
 
-            {xlsxErr && (
-              <div style={{ display:'flex', flexDirection:'column', alignItems:'center',
-                justifyContent:'center', height:'100%', color:'#DC2626', gap:10 }}>
-                <Ic n="x" s={32} c="#DC2626"/>
-                <div style={{ fontSize:14 }}>{xlsxErr}</div>
-              </div>
-            )}
+              {xlsxErr && (
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'center',
+                  justifyContent:'center', height:'100%', color:'#DC2626', gap:10 }}>
+                  <Ic n="x" s={32} c="#DC2626"/>
+                  <div style={{ fontSize:14 }}>{xlsxErr}</div>
+                </div>
+              )}
 
-            {sheet && rows.length === 0 && !xlsxLoading && (
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
-                height:'100%', color:'#9ca3af', fontSize:13 }}>
-                Planilha vazia
-              </div>
-            )}
+              {sheet && rows.length === 0 && !xlsxLoading && (
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
+                  height:'100%', color:'#9ca3af', fontSize:13 }}>
+                  Planilha vazia
+                </div>
+              )}
 
-            {sheet && rows.length > 0 && (
-              <table style={{
-                borderCollapse:'collapse', fontSize:12,
-                tableLayout:'auto',
-                /* a tabela se expande para caber todo o conteúdo */
-                width:'max-content', minWidth:'100%',
-              }}>
-                {/* cabeçalho de letras de coluna (A, B, C…) */}
-                <thead>
-                  <tr>
-                    {/* canto superior esquerdo — índice de linha */}
-                    <th style={{
-                      position: freeze ? 'sticky' : 'static',
-                      top:0, left:0, zIndex: freeze ? 4 : 'auto',
-                      background:'#E8EAED', border:'1px solid #CCC',
-                      minWidth:42, width:42, padding:'4px 6px',
-                      fontSize:10, color:'#888', userSelect:'none', textAlign:'center',
-                    }}>#</th>
-                    {Array.from({ length: sheet.maxCols }).map((_, ci) => (
-                      <th key={ci} style={{
-                        position: freeze ? 'sticky' : 'static',
-                        top:0, zIndex: freeze ? 3 : 'auto',
-                        background:'#E8EAED', border:'1px solid #CCC',
-                        minWidth:CELL_MIN_W, padding:'4px 8px',
-                        fontSize:10, fontWeight:700, color:'#555',
-                        textAlign:'center', userSelect:'none', whiteSpace:'nowrap',
-                      }}>
-                        {colLetter(ci)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {rows.map((row, ri) => {
-                    const isFirstDataRow = ri === 0
-                    return (
-                      <tr key={ri} style={{
-                        background: isFirstDataRow ? '#EEF2FF'
-                          : ri % 2 === 0 ? '#FAFAFA' : '#fff'
-                      }}>
-                        {/* Número de linha — frozen à esquerda */}
-                        <td style={{
-                          position:'sticky', left:0, zIndex:1,
-                          background: isFirstDataRow ? '#DDE3F8' : ri % 2 === 0 ? '#F0F0F0' : '#F8F8F8',
-                          border:'1px solid #DDD', padding:'4px 8px',
-                          fontSize:10, color:'#999', fontWeight:600,
-                          textAlign:'right', userSelect:'none', minWidth:42,
-                        }}>
-                          {ri + 1}
-                        </td>
-
-                        {row.map((cell, ci) => {
-                          const vazio = cell === '' || cell === null || cell === undefined
-                          return (
-                            <td key={ci} style={{
-                              border:'1px solid #E0E0E0',
-                              padding:'5px 10px',
-                              whiteSpace:'nowrap',
-                              minWidth:CELL_MIN_W,
-                              maxWidth:320,
-                              overflow:'hidden',
-                              textOverflow:'ellipsis',
-                              color: isFirstDataRow ? '#1a1a6e' : vazio ? '#ccc' : '#212121',
-                              fontWeight: isFirstDataRow ? 700 : 400,
-                              background: isFirstDataRow ? '#EEF2FF' : undefined,
-                              verticalAlign:'top',
-                            }}
-                            title={vazio ? '' : String(cell)}>
-                              {vazio ? '' : String(cell)}
-                            </td>
-                          )
-                        })}
+              {sheet && rows.length > 0 && (
+                <div className="file-viewer-scroll" style={{ width: '100%', height: '100%' }}>
+                  <table style={{
+                    borderCollapse:'collapse', fontSize:12,
+                    tableLayout:'auto',
+                    width:'max-content', minWidth:'100%',
+                  }}>
+                    <thead>
+                      <tr>
+                        <th style={{
+                          position: freeze ? 'sticky' : 'static',
+                          top:0, left:0, zIndex: freeze ? 4 : 'auto',
+                          background:'#E8EAED', border:'1px solid #CCC',
+                          minWidth:42, width:42, padding:'4px 6px',
+                          fontSize:10, color:'#888', userSelect:'none', textAlign:'center',
+                        }}>#</th>
+                        {Array.from({ length: sheet.maxCols }).map((_, ci) => (
+                          <th key={ci} style={{
+                            position: freeze ? 'sticky' : 'static',
+                            top:0, zIndex: freeze ? 3 : 'auto',
+                            background:'#E8EAED', border:'1px solid #CCC',
+                            minWidth:CELL_MIN_W, padding:'4px 8px',
+                            fontSize:10, fontWeight:700, color:'#555',
+                            textAlign:'center', userSelect:'none', whiteSpace:'nowrap',
+                          }}>
+                            {colLetter(ci)}
+                          </th>
+                        ))}
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+
+                    <tbody>
+                      {rows.map((row, ri) => {
+                        const isFirstDataRow = ri === 0
+                        return (
+                          <tr key={ri} style={{
+                            background: isFirstDataRow ? '#EEF2FF'
+                              : ri % 2 === 0 ? '#FAFAFA' : '#fff'
+                          }}>
+                            <td style={{
+                              position:'sticky', left:0, zIndex:1,
+                              background: isFirstDataRow ? '#DDE3F8' : ri % 2 === 0 ? '#F0F0F0' : '#F8F8F8',
+                              border:'1px solid #DDD', padding:'4px 8px',
+                              fontSize:10, color:'#999', fontWeight:600,
+                              textAlign:'right', userSelect:'none', minWidth:42,
+                            }}>
+                              {ri + 1}
+                            </td>
+
+                            {row.map((cell, ci) => {
+                              const vazio = cell === '' || cell === null || cell === undefined
+                              return (
+                                <td key={ci} style={{
+                                  border:'1px solid #E0E0E0',
+                                  padding:'5px 10px',
+                                  whiteSpace:'nowrap',
+                                  minWidth:CELL_MIN_W,
+                                  maxWidth:320,
+                                  overflow:'hidden',
+                                  textOverflow:'ellipsis',
+                                  color: isFirstDataRow ? '#1a1a6e' : vazio ? '#ccc' : '#212121',
+                                  fontWeight: isFirstDataRow ? 700 : 400,
+                                  background: isFirstDataRow ? '#EEF2FF' : undefined,
+                                  verticalAlign:'top',
+                                }}
+                                title={vazio ? '' : String(cell)}>
+                                  {vazio ? '' : String(cell)}
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* ─── Botões de navegação horizontal ─── */}
+            {!xlsxLoading && !xlsxErr && sheet && rows.length > 0 && (
+              <>
+                {/* Botão esquerdo */}
+                <button
+                  onClick={scrollLeft}
+                  style={{
+                    position:'absolute',
+                    left:8,
+                    top:'50%',
+                    transform:'translateY(-50%)',
+                    zIndex:10,
+                    width:36,
+                    height:36,
+                    borderRadius:'50%',
+                    background:'rgba(76, 175, 80, 0.9)',
+                    color:'#fff',
+                    border:'2px solid #fff',
+                    boxShadow:'0 2px 12px rgba(0,0,0,0.25)',
+                    cursor:'pointer',
+                    display:'flex',
+                    alignItems:'center',
+                    justifyContent:'center',
+                    fontSize:20,
+                    fontWeight:'bold',
+                    transition:'all 0.2s ease',
+                    fontFamily:'inherit',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = '#388E3C'
+                    e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'rgba(76, 175, 80, 0.9)'
+                    e.currentTarget.style.transform = 'translateY(-50%) scale(1)'
+                  }}
+                >
+                  ‹
+                </button>
+
+                {/* Botão direito */}
+                <button
+                  onClick={scrollRight}
+                  style={{
+                    position:'absolute',
+                    right:8,
+                    top:'50%',
+                    transform:'translateY(-50%)',
+                    zIndex:10,
+                    width:36,
+                    height:36,
+                    borderRadius:'50%',
+                    background:'rgba(76, 175, 80, 0.9)',
+                    color:'#fff',
+                    border:'2px solid #fff',
+                    boxShadow:'0 2px 12px rgba(0,0,0,0.25)',
+                    cursor:'pointer',
+                    display:'flex',
+                    alignItems:'center',
+                    justifyContent:'center',
+                    fontSize:20,
+                    fontWeight:'bold',
+                    transition:'all 0.2s ease',
+                    fontFamily:'inherit',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = '#388E3C'
+                    e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'rgba(76, 175, 80, 0.9)'
+                    e.currentTarget.style.transform = 'translateY(-50%) scale(1)'
+                  }}
+                >
+                  ›
+                </button>
+              </>
             )}
-          </div>
+          </>
         )}
 
         {/* Outros formatos */}
@@ -420,7 +542,7 @@ function FileViewer({ arq, onClose }) {
         )}
       </div>
 
-      {/* ── Rodapé de info (só planilha) ── */}
+      {/* ── Rodapé ── */}
       {isSpreadsheet && sheet && !xlsxLoading && (
         <div style={{ background:'#1C1C2E', padding:'5px 16px', display:'flex',
           alignItems:'center', gap:16, fontSize:10, color:'#6b7280', flexShrink:0 }}>
@@ -432,7 +554,7 @@ function FileViewer({ arq, onClose }) {
             </span>
           )}
           <span style={{ marginLeft:'auto', color:'#4b5563' }}>
-            Scroll horizontal e vertical disponível · ESC para fechar
+            Use as setas laterais ou scroll · ESC para fechar
           </span>
         </div>
       )}
@@ -982,7 +1104,7 @@ export default function App() {
   const [config, setConfig]             = useState(false)
   const [loading, setLoading]           = useState(true)
   const [fileViewer, setFileViewer]     = useState(null)
-  const [view, setView]                 = useState('board') // 'board' | 'clientes' | 'arquivos' | 'relatorio'
+  const [view, setView]                 = useState('board')
 
   const showToast = (msg, type = 'ok') => {
     setToast({ msg, type })
@@ -1067,7 +1189,6 @@ export default function App() {
       if (error) return showToast('Erro ao criar cliente', 'error')
       await supabase.from('historico').insert({ cliente_id: data.id, descricao: 'Cliente cadastrado' })
 
-      // Upload dos arquivos pendentes do modal
       for (const file of arquivosPendentes) {
         const ext = file.name.split('.').pop()
         const path = `${data.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
