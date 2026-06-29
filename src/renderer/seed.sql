@@ -7,17 +7,9 @@
 CREATE TABLE IF NOT EXISTS clientes (
   id            BIGSERIAL PRIMARY KEY,
   nome          TEXT NOT NULL,
-  razao_social  TEXT,
-  cnpj          TEXT,
-  contato       TEXT,
-  email         TEXT,
-  telefone      TEXT,
-  cidade        TEXT,
-  uf            TEXT,
   forma_entrega TEXT DEFAULT 'ARKMEDS',
   link_arkmeds  TEXT,
   observacoes   TEXT,
-  data_corte    TEXT,
   criado_em     TIMESTAMPTZ DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ DEFAULT NOW()
 );
@@ -214,94 +206,3 @@ INSERT INTO clientes (nome, forma_entrega, observacoes) VALUES
 ('WOERNER','ARKMEDS','24 MESES PERIODICIDADE / VERIFICAR PLANILHA DO CLIENTE'),
 ('YPIÓCA','ARKMEDS','VERIFICAR PLANILHA DO CLIENTE'),
 ('ZSG','ARKMEDS','VERIFICAR PLANILHA DO CLIENTE');
-
--- E-mails da aba "E-mails" (amostra representativa com e-mails conhecidos)
-UPDATE clientes SET email = 'joece.nascimento@brascola.com.br' WHERE nome = 'BRASCOLA';
-UPDATE clientes SET email = 'greice.buzzi@descarpack.com.br' WHERE nome = 'DESCARPACK';
-UPDATE clientes SET email = 'augusto.oliveira@cetenco.com.br' WHERE nome = 'CETENCO';
-UPDATE clientes SET email = 'qualidade2@plastibras.com.br' WHERE nome = 'PLASTIBRAS';
-UPDATE clientes SET email = 'danilo.s.santana@nidec-ga.com' WHERE nome = 'EMBRACO';
-UPDATE clientes SET email = 'tais.laurindo@nidec-ga.com' WHERE nome = 'NIDEC';
-UPDATE clientes SET email = 'Gustavo.Pinto@kof.com.mx' WHERE nome = 'FOUNTAIN';
-UPDATE clientes SET email = 'kleyton@joarp.com.br' WHERE nome = 'JOARP';
-UPDATE clientes SET email = 'qualidade@weldvision.com.br' WHERE nome = 'WELD VISION';
-UPDATE clientes SET email = 'fabricio.batista-sc@airliquide.com' WHERE nome LIKE '%ENDRESS%';
-UPDATE clientes SET email = 'leticia.vieira@marcegaglia.com.br' WHERE nome = 'MARCEGAGLIA';
-UPDATE clientes SET email = 'qualidade1@ibt.ind.br' WHERE nome = 'IBT';
-UPDATE clientes SET email = 'qualidade@fiberville.com.br' WHERE nome = 'FIBERVILLE';
-UPDATE clientes SET email = 'carlospadilha@hrmmoldes.com.br' WHERE nome = 'HRM MOLDES';
-UPDATE clientes SET email = 'inspecao@minancora.com.br' WHERE nome = 'MINÂNCORA';
-UPDATE clientes SET email = 'qualidade@multilog.com.br' WHERE nome = 'MULTILOG';
-UPDATE clientes SET email = 'rodrigotavarodrigues@gmail.com' WHERE nome = 'LABORATÓRIO SANDRINI';
-UPDATE clientes SET email = 'karina@moinhocidadebella.com.br' WHERE nome = 'MOINHO CIDADE BELLA';
-UPDATE clientes SET email = 'qualidade@kowalsky.com.br' WHERE nome = 'KOWALSKY';
-UPDATE clientes SET email = 'beatriz.orzechovicz@fgmdentalgroup.com' WHERE nome = 'DENTSCARE';
-UPDATE clientes SET email = 'adm@dagnoni.ind.br' WHERE nome = 'DAGNONI';
-UPDATE clientes SET email = 'osmair.campos@indumak.com.br' WHERE nome = 'INDUMAK';
-UPDATE clientes SET email = 'lab@borrachassr.com.br' WHERE nome = 'INDÚSTRIA DE BORRACHAS SR';
-UPDATE clientes SET email = 'claudia.cq@inplavel.com.br' WHERE nome = 'INPLAVEL';
-UPDATE clientes SET email = 'nfe@inside-medical.com' WHERE nome = 'INSIDE MEDICAL';
-UPDATE clientes SET email = 'jonathas.chikazawa@portoitapoa.com' WHERE nome = 'ITAPOÁ TERMINAIS PORTUÁRIOS';
-UPDATE clientes SET email = 'celso@satake.com.br' WHERE nome = 'SATAKE';
-UPDATE clientes SET email = 'alice@triunfodobrasil.com' WHERE nome = 'TRIUNFO';
-UPDATE clientes SET email = 'juliana@shalompolimentos.com.br' WHERE nome = 'SHALOM';
-UPDATE clientes SET email = 'gabriel.hastreiter@oxford.ind.br' WHERE nome LIKE '%OXFORD%';
-UPDATE clientes SET email = 'ediney.reis@bioma.ind.br' WHERE nome = 'SIMBIOSE';
-UPDATE clientes SET email = 'bruno.silva@schulz.com.br' WHERE nome = 'SCHULZ';
-UPDATE clientes SET email = 'vanderley.dagnoni@busscar.com.br' WHERE nome = 'CARBUSS';
-UPDATE clientes SET email = 'janio@bestfoodsbrasil.com' WHERE nome LIKE '%FAST%';
-UPDATE clientes SET email = 'qualidade@falcon-eletronica.com.br' WHERE nome = 'FALCON';
-UPDATE clientes SET email = 'vanderlei@fbmoldes.com.br' WHERE nome = 'FBM';
-UPDATE clientes SET email = 'qualidade@zkaluminio.ind.br' WHERE nome = 'FETTI';
-UPDATE clientes SET email = 'qualidade@fiberville.com.br' WHERE nome = 'FIBERVILLE';
-UPDATE clientes SET email = 'nfe@fixsul.com.br' WHERE nome = 'FIXSUL';
-UPDATE clientes SET email = 'qualidade1@futurafundicao.com.br' WHERE nome = 'FUTURA';
-UPDATE clientes SET email = 'qualidade@gmeyerequipamentos.com.br' WHERE nome = 'G-MEYER';
-UPDATE clientes SET email = 'suhellen.barcelos@habitasul.com.br' WHERE nome = 'HABITASUL';
-UPDATE clientes SET email = 'isabel.cardoso@hard.com.br' WHERE nome = 'HARD';
-UPDATE clientes SET email = 'douglas.hedler@krona.com.br' WHERE nome = 'KRONA TUBOS E CONEXÕES';
-UPDATE clientes SET email = 'qualidade1@woerner.com.br' WHERE nome = 'WOERNER';
-UPDATE clientes SET email = 'wellington@plasticoville.com.br' WHERE nome = 'PLASTICOVILLE';
-UPDATE clientes SET email = 'qualidade@survisul.com.br' WHERE nome = 'SURVISUL';
-UPDATE clientes SET email = 'qualidade@tecnoperfil.com.br' WHERE nome = 'TECNOPERFIL';
-UPDATE clientes SET email = 'comercial.jvl@teleworld.com.br' WHERE nome = 'TELEWORLD';
-UPDATE clientes SET email = 'dcguesser@minipa.com.br' WHERE nome = 'MINIPA';
-UPDATE clientes SET email = 'sarah@aikonempreendimentos.com.br' WHERE nome = 'L''AQUAMARINE';
-UPDATE clientes SET email = 'comercial@casadainstrumentacao.com' WHERE nome = 'CASA DA INSTRUMENTAÇÃO';
-UPDATE clientes SET email = 'fabricio.rosa@veolia.com' WHERE nome LIKE '%SODEXO%BLUMENAU%';
-UPDATE clientes SET email = 'mariana.kampa@triunfodobrasil.com' WHERE nome = 'TRIUNFO';
-UPDATE clientes SET email = 'cq@beloburger.com.br' WHERE nome = 'POMPÉIA ALIMENTOS';
-UPDATE clientes SET email = 'contato@protmolde.com.br' WHERE nome = 'PROTMOLDE';
-UPDATE clientes SET email = 'ahanada@prots.com.br' WHERE nome = 'PROTS';
-UPDATE clientes SET email = 'gabriele.steinbraenner@quimicanovabrasil.com.br' WHERE nome = 'QUÍMICA NOVA';
-UPDATE clientes SET email = 'controlealimentos@ranchobom.com.br' WHERE nome = 'RANCHO BOM';
-UPDATE clientes SET email = 'mylena.arruda@rebic.com.br' WHERE nome = 'REFRESCOS BANDEIRANTES';
-UPDATE clientes SET email = 'rafaela@fribeiro.com.br' WHERE nome = 'RIBEIRO FERRAMENTARIA';
-UPDATE clientes SET email = 'cristiane.carli@sapore.com.br' WHERE nome LIKE '%SAPORE%';
-UPDATE clientes SET email = 'manufatura@strauhs.com.br' WHERE nome = 'STRAUHS';
-UPDATE clientes SET email = 'fabio.bastos@kof.com.mx' WHERE nome = 'SPAL - OSASCO';
-UPDATE clientes SET email = 'janice.batista@kof.com.mx' WHERE nome = 'SPAL BLUMENAU';
-UPDATE clientes SET email = 'qualidade@vmgtransportes.com.br' WHERE nome = 'VMG';
-UPDATE clientes SET email = 'qualidade1@woerner.com.br' WHERE nome = 'WOERNER';
-
--- Data de corte para clientes da Planilha3
-UPDATE clientes SET data_corte = 'Dia 20' WHERE nome = 'ATLANTIS';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome = 'BRASCOLA';
-UPDATE clientes SET data_corte = 'Dia 20' WHERE nome = 'EMBRACO';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome = 'LEÃO - FAZENDA RIO GRANDE';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome LIKE '%LEÃO%FERNANDES%';
-UPDATE clientes SET data_corte = 'Dia 20' WHERE nome = 'SIEMENS';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome = 'HABITASUL';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome = 'REFRESCOS BANDEIRANTES';
-UPDATE clientes SET data_corte = 'Dia 10' WHERE nome = 'DOCOL';
-UPDATE clientes SET data_corte = 'Dia 20' WHERE nome = 'EBS';
-UPDATE clientes SET data_corte = 'Dia 24' WHERE nome LIKE '%CRISTALPET%';
-UPDATE clientes SET data_corte = 'Dia 20' WHERE nome LIKE 'DENTSCARE';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome = 'CISABRASILE';
-UPDATE clientes SET data_corte = 'Dia 20' WHERE nome = 'ENDRESS + HAUSER';
-UPDATE clientes SET data_corte = 'Dia 20' WHERE nome LIKE 'FOUNTAIN%';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome = 'CONSÓRCIO GÁS SUL';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome LIKE '%GRUPO SOLAR%';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome LIKE 'SPAL%';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome = 'WOERNER';
-UPDATE clientes SET data_corte = 'Dia 25' WHERE nome = 'UNION MOLDES';

@@ -308,14 +308,12 @@ function FileViewer({ arq, onClose }) {
 // ─── Modal Cadastro / Edição ──────────────────────────────────────────────────
 function ModalCliente({ cliente, onSave, onClose }) {
   const [form, setForm] = useState(cliente || {
-    nome: '', razao_social: '', cnpj: '', contato: '', email: '', telefone: '',
-    cidade: '', uf: '', forma_entrega: 'ARKMEDS', tipo_certificado: '',
-    link_arkmeds: '', observacoes: '', data_corte: '', status: 'Ativo',
+    nome: '', forma_entrega: 'ARKMEDS', link_arkmeds: '', observacoes: '',
   })
+  const [arquivosPendentes, setArquivosPendentes] = useState([])
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const formas  = ['ARKMEDS', 'E-MAIL', 'FÍSICO', 'GOOGLE DRIVE', 'ARKMEDS / E-MAIL', 'SITE']
-  const statuss = ['Ativo', 'Inativo', 'Pendente']
 
   const inp = (extra = {}) => ({
     width: '100%', border: '1px solid #E0E0E0', borderRadius: 7,
@@ -324,6 +322,19 @@ function ModalCliente({ cliente, onSave, onClose }) {
   })
   const lbl = { fontSize: 11, fontWeight: 700, color: '#757575',
     textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, display: 'block' }
+
+  const selecionarArquivos = () => {
+    const input = document.createElement('input')
+    input.type = 'file'; input.multiple = true; input.accept = '*'
+    input.onchange = e => {
+      const novos = Array.from(e.target.files)
+      setArquivosPendentes(prev => [...prev, ...novos])
+    }
+    input.click()
+  }
+
+  const removerPendente = (idx) =>
+    setArquivosPendentes(prev => prev.filter((_, i) => i !== idx))
 
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.45)', zIndex:800,
@@ -352,66 +363,10 @@ function ModalCliente({ cliente, onSave, onClose }) {
           letterSpacing:'0.08em', marginBottom:12, paddingBottom:6, borderBottom:`1px solid ${T.redLight}` }}>
           Identificação
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:13, marginBottom:18 }}>
-          <div style={{ gridColumn:'1/-1' }}>
-            <label style={lbl}>Nome / Razão curta *</label>
+        <div style={{ marginBottom:18 }}>
+          <div>
+            <label style={lbl}>Empresa *</label>
             <input style={inp()} value={form.nome} onChange={e => set('nome', e.target.value)}
-              onFocus={e => e.target.style.borderColor = T.red}
-              onBlur={e => e.target.style.borderColor = '#E0E0E0'} />
-          </div>
-          <div style={{ gridColumn:'1/-1' }}>
-            <label style={lbl}>Razão social completa</label>
-            <input style={inp()} value={form.razao_social||''} onChange={e => set('razao_social', e.target.value)}
-              onFocus={e => e.target.style.borderColor = T.red}
-              onBlur={e => e.target.style.borderColor = '#E0E0E0'} />
-          </div>
-          <div>
-            <label style={lbl}>CNPJ</label>
-            <input style={inp()} value={form.cnpj||''} onChange={e => set('cnpj', e.target.value)}
-              onFocus={e => e.target.style.borderColor = T.red}
-              onBlur={e => e.target.style.borderColor = '#E0E0E0'} />
-          </div>
-          <div>
-            <label style={lbl}>Status</label>
-            <select style={inp()} value={form.status||'Ativo'} onChange={e => set('status', e.target.value)}>
-              {statuss.map(s => <option key={s}>{s}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={lbl}>Cidade</label>
-            <input style={inp()} value={form.cidade||''} onChange={e => set('cidade', e.target.value)}
-              onFocus={e => e.target.style.borderColor = T.red}
-              onBlur={e => e.target.style.borderColor = '#E0E0E0'} />
-          </div>
-          <div>
-            <label style={lbl}>UF</label>
-            <input style={inp()} value={form.uf||''} onChange={e => set('uf', e.target.value)}
-              onFocus={e => e.target.style.borderColor = T.red}
-              onBlur={e => e.target.style.borderColor = '#E0E0E0'} />
-          </div>
-        </div>
-
-        {/* Seção: Contato */}
-        <div style={{ fontSize:11, fontWeight:700, color:T.red, textTransform:'uppercase',
-          letterSpacing:'0.08em', marginBottom:12, paddingBottom:6, borderBottom:`1px solid ${T.redLight}` }}>
-          Contato
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:13, marginBottom:18 }}>
-          <div>
-            <label style={lbl}>Nome do contato</label>
-            <input style={inp()} value={form.contato||''} onChange={e => set('contato', e.target.value)}
-              onFocus={e => e.target.style.borderColor = T.red}
-              onBlur={e => e.target.style.borderColor = '#E0E0E0'} />
-          </div>
-          <div>
-            <label style={lbl}>Telefone</label>
-            <input style={inp()} value={form.telefone||''} onChange={e => set('telefone', e.target.value)}
-              onFocus={e => e.target.style.borderColor = T.red}
-              onBlur={e => e.target.style.borderColor = '#E0E0E0'} />
-          </div>
-          <div style={{ gridColumn:'1/-1' }}>
-            <label style={lbl}>E-mail</label>
-            <input style={inp()} type="email" value={form.email||''} onChange={e => set('email', e.target.value)}
               onFocus={e => e.target.style.borderColor = T.red}
               onBlur={e => e.target.style.borderColor = '#E0E0E0'} />
           </div>
@@ -428,19 +383,6 @@ function ModalCliente({ cliente, onSave, onClose }) {
             <select style={inp()} value={form.forma_entrega||'ARKMEDS'} onChange={e => set('forma_entrega', e.target.value)}>
               {formas.map(f => <option key={f}>{f}</option>)}
             </select>
-          </div>
-          <div>
-            <label style={lbl}>Tipo de certificado</label>
-            <select style={inp()} value={form.tipo_certificado||''} onChange={e => set('tipo_certificado', e.target.value)}>
-              <option value="">Selecionar...</option>
-              {TIPOS_CERT.map(t => <option key={t}>{t}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={lbl}>Data de corte</label>
-            <input style={inp()} placeholder="Ex: Dia 20" value={form.data_corte||''} onChange={e => set('data_corte', e.target.value)}
-              onFocus={e => e.target.style.borderColor = T.red}
-              onBlur={e => e.target.style.borderColor = '#E0E0E0'} />
           </div>
           <div>
             <label style={lbl}>Link Arkmeds / Pasta</label>
@@ -463,6 +405,55 @@ function ModalCliente({ cliente, onSave, onClose }) {
           onBlur={e => e.target.style.borderColor = '#E0E0E0'}
         />
 
+        {/* Arquivos — só no cadastro novo */}
+        {!cliente?.id && (
+          <>
+            <div style={{ fontSize:11, fontWeight:700, color:T.red, textTransform:'uppercase',
+              letterSpacing:'0.08em', marginBottom:12, paddingBottom:6, borderBottom:`1px solid ${T.redLight}`,
+              marginTop:18 }}>
+              Arquivos
+            </div>
+
+            {/* Zona de drop / botão */}
+            <div onClick={selecionarArquivos}
+              style={{ border:'1.5px dashed #D1D5DB', borderRadius:9, padding:'16px 14px',
+                textAlign:'center', cursor:'pointer', marginBottom: arquivosPendentes.length ? 10 : 18,
+                transition:'border .12s', background:'#FAFAFA' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = T.red}
+              onMouseLeave={e => e.currentTarget.style.borderColor = '#D1D5DB'}>
+              <Ic n="upload" s={18} c="#9ca3af"/>
+              <div style={{ fontSize:12, color:'#9ca3af', marginTop:5 }}>
+                Clique para adicionar arquivos
+              </div>
+              <div style={{ fontSize:10, color:'#bbb', marginTop:2 }}>PDF, planilhas, imagens e mais</div>
+            </div>
+
+            {/* Lista de arquivos pendentes */}
+            {arquivosPendentes.length > 0 && (
+              <div style={{ marginBottom:18, display:'flex', flexDirection:'column', gap:5 }}>
+                {arquivosPendentes.map((f, i) => (
+                  <div key={i} style={{ display:'flex', alignItems:'center', gap:8, padding:'7px 10px',
+                    background:'#F8FAFC', border:'1px solid #E2E8F0', borderRadius:7 }}>
+                    <Ic n="file" s={13} c="#9ca3af"/>
+                    <span style={{ flex:1, fontSize:12, overflow:'hidden',
+                      textOverflow:'ellipsis', whiteSpace:'nowrap', color:'#374151' }}>
+                      {f.name}
+                    </span>
+                    <span style={{ fontSize:10, color:'#9ca3af', flexShrink:0 }}>
+                      {fmtSz(f.size)}
+                    </span>
+                    <button onClick={() => removerPendente(i)}
+                      style={{ background:'none', border:'none', cursor:'pointer', padding:2,
+                        display:'flex', alignItems:'center', color:'#DC2626' }}>
+                      <Ic n="x" s={12} c="#DC2626"/>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
         {/* Rodapé */}
         <div style={{ display:'flex', justifyContent:'flex-end', gap:8, marginTop:22,
           paddingTop:18, borderTop:'1px solid #F0F0F0' }}>
@@ -474,7 +465,7 @@ function ModalCliente({ cliente, onSave, onClose }) {
           <button style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 22px',
             background:T.red, color:'#fff', border:'none', borderRadius:8,
             fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}
-            onClick={() => onSave(form)}>
+            onClick={() => onSave(form, arquivosPendentes)}>
             <Ic n="save" s={13} c="#fff"/> Salvar
           </button>
         </div>
@@ -568,35 +559,12 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
                 overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                 {c.nome}
               </div>
-              {c.razao_social && (
-                <div style={{ fontSize:11, color:T.sub, marginTop:1,
-                  overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                  {c.razao_social}
-                </div>
-              )}
               <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:5, flexWrap:'wrap' }}>
                 {/* Badge forma entrega */}
                 <span style={{ background:col.bg, color:col.cor, fontSize:10, fontWeight:700,
                   padding:'2px 9px', borderRadius:5, border:`1px solid ${col.cor}22` }}>
                   {col.label}
                 </span>
-                {/* Tipo certificado */}
-                {c.tipo_certificado && (
-                  <span style={{ background:'#FFF3E0', color:'#E65100', fontSize:10, fontWeight:600,
-                    padding:'2px 9px', borderRadius:5, border:'1px solid #E6510022',
-                    display:'flex', alignItems:'center', gap:4 }}>
-                    <Ic n="award" s={10} c="#E65100"/> {c.tipo_certificado}
-                  </span>
-                )}
-                {/* Status */}
-                {c.status && (
-                  <span style={{ fontSize:10, fontWeight:700, color:statusCor[c.status] || T.sub,
-                    display:'flex', alignItems:'center', gap:3 }}>
-                    <span style={{ width:6, height:6, borderRadius:'50%',
-                      background: statusCor[c.status] || T.sub, display:'inline-block' }}/>
-                    {c.status}
-                  </span>
-                )}
               </div>
             </div>
             {/* Ações */}
@@ -652,8 +620,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
                   {campo('Forma de entrega', c.forma_entrega)}
-                  {campo('Tipo de certificado', c.tipo_certificado)}
-                  {campo('Data de corte', c.data_corte)}
                   {c.link_arkmeds && campo('Link / Pasta', 'Abrir pasta ↗', c.link_arkmeds)}
                 </div>
               </div>
@@ -667,44 +633,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
                     📌 Observações e regras especiais
                   </div>
                   <div style={{ fontSize:13, color:'#78350F', lineHeight:1.65 }}>{c.observacoes}</div>
-                </div>
-              )}
-
-              {/* Identificação */}
-              <div style={{ background:'#fff', border:'1px solid #EBEBEB', borderRadius:10,
-                padding:'14px 16px', marginBottom:12 }}>
-                {secTit('Identificação')}
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 20px' }}>
-                  {campo('Nome', c.nome)}
-                  {campo('CNPJ', c.cnpj)}
-                  {campo('Cidade / UF', c.cidade ? `${c.cidade}${c.uf ? `, ${c.uf}` : ''}` : null)}
-                </div>
-              </div>
-
-              {/* Contato */}
-              {(c.contato || c.email || c.telefone) && (
-                <div style={{ background:'#fff', border:'1px solid #EBEBEB', borderRadius:10,
-                  padding:'14px 16px', marginBottom:12 }}>
-                  {secTit('Contato')}
-                  <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
-                    {c.contato && (
-                      <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:13, color:'#212121' }}>
-                        <Ic n="user" s={13} c="#9ca3af"/> {c.contato}
-                      </div>
-                    )}
-                    {c.telefone && (
-                      <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:13, color:'#212121' }}>
-                        <Ic n="phone" s={13} c="#9ca3af"/> {c.telefone}
-                      </div>
-                    )}
-                    {c.email && (
-                      <a href={`mailto:${c.email}`}
-                        style={{ display:'flex', alignItems:'center', gap:8, fontSize:13,
-                          color:'#1565C0', textDecoration:'none' }}>
-                        <Ic n="mail" s={13} c="#1565C0"/> {c.email}
-                      </a>
-                    )}
-                  </div>
                 </div>
               )}
 
@@ -779,9 +707,10 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
               )}
 
               {arquivos.map(a => (
-                <div key={a.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px',
-                  border:'1px solid #E5E7EB', borderRadius:9, marginBottom:7, background:'#fff',
-                  transition:'border .12s' }}
+                <div key={a.id} onClick={() => onAbrirArq(a)}
+                  style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px',
+                    border:'1px solid #E5E7EB', borderRadius:9, marginBottom:7, background:'#fff',
+                    transition:'border .12s', cursor:'pointer' }}
                   onMouseEnter={e => e.currentTarget.style.borderColor = T.red}
                   onMouseLeave={e => e.currentTarget.style.borderColor = '#E5E7EB'}>
                   <Ic n="file" s={18} c="#9ca3af"/>
@@ -789,15 +718,9 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
                     <div style={{ fontSize:13, fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{a.nome_original}</div>
                     <div style={{ fontSize:10, color:'#9ca3af' }}>{fmtSz(a.tamanho)} · {fmt(a.criado_em)}</div>
                   </div>
-                  <button onClick={() => onAbrirArq(a)}
-                    style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px',
-                      background:'#E3F2FD', color:'#1565C0', border:'none', borderRadius:6,
-                      fontSize:11, cursor:'pointer', fontFamily:'inherit', fontWeight:600 }}>
-                    <Ic n="eye" s={11} c="#1565C0"/> Visualizar
-                  </button>
-                  <button onClick={() => onExcluirArq(a)}
+                  <button onClick={e => { e.stopPropagation(); onExcluirArq(a) }}
                     style={{ padding:'5px 8px', background:'transparent', border:'1px solid #FECACA',
-                      color:'#DC2626', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center' }}>
+                      color:'#DC2626', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', flexShrink:0 }}>
                     <Ic n="trash" s={12}/>
                   </button>
                 </div>
@@ -839,7 +762,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
 // ─── Card do Kanban ───────────────────────────────────────────────────────────
 function KCard({ c, col, onClick }) {
   const [hov, setHov] = useState(false)
-  const statusCor = { Ativo:'#2E7D32', Inativo:'#C62828', Pendente:'#E65100' }
 
   return (
     <div onClick={onClick}
@@ -849,53 +771,23 @@ function KCard({ c, col, onClick }) {
         boxShadow: hov ? `0 4px 14px ${col.cor}22` : '0 1px 3px rgba(0,0,0,.06)',
         transition:'all .14s' }}>
 
-      {/* Linha 1 — nome + status */}
-      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:6, marginBottom:6 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:7, minWidth:0 }}>
-          <Av nome={c.nome} size={24}/>
-          <span style={{ fontSize:12, fontWeight:700, color:'#111',
-            overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-            {c.nome}
-          </span>
-        </div>
-        {c.status && c.status !== 'Ativo' && (
-          <span style={{ fontSize:9, fontWeight:700, color:statusCor[c.status],
-            background:`${statusCor[c.status]}18`, padding:'1px 6px',
-            borderRadius:4, flexShrink:0 }}>
-            {c.status.toUpperCase()}
-          </span>
-        )}
+      {/* Linha 1 — nome */}
+      <div style={{ display:'flex', alignItems:'center', gap:7, minWidth:0, marginBottom:6 }}>
+        <Av nome={c.nome} size={24}/>
+        <span style={{ fontSize:12, fontWeight:700, color:'#111',
+          overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+          {c.nome}
+        </span>
       </div>
-
-      {/* Linha 2 — certificado */}
-      {c.tipo_certificado && (
-        <div style={{ display:'flex', alignItems:'center', gap:5, marginBottom:5 }}>
-          <Ic n="award" s={11} c="#E65100"/>
-          <span style={{ fontSize:11, color:'#E65100', fontWeight:600 }}>{c.tipo_certificado}</span>
-        </div>
-      )}
 
       {/* Observações — truncadas */}
       {c.observacoes && (
-        <div style={{ fontSize:11, color:'#757575', lineHeight:1.4, marginBottom:6,
+        <div style={{ fontSize:11, color:'#757575', lineHeight:1.4,
           overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2,
           WebkitBoxOrient:'vertical' }}>
           {c.observacoes}
         </div>
       )}
-
-      {/* Rodapé — cidade + corte */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center',
-        marginTop:4, paddingTop:6, borderTop:'1px solid #F5F5F5' }}>
-        <span style={{ fontSize:10, color:'#9ca3af', display:'flex', alignItems:'center', gap:3 }}>
-          {c.cidade ? <><Ic n="pin" s={9} c="#bbb"/>{c.cidade}</> : <span style={{ color:'#D1D5DB' }}>Sem cidade</span>}
-        </span>
-        {c.data_corte && (
-          <span style={{ fontSize:10, color:'#9ca3af', display:'flex', alignItems:'center', gap:3 }}>
-            <Ic n="clock" s={9} c="#bbb"/> {c.data_corte}
-          </span>
-        )}
-      </div>
     </div>
   )
 }
@@ -1025,7 +917,7 @@ export default function App() {
   }
 
   // ── CRUD ───────────────────────────────────────────────────────────────────
-  const salvarCliente = async (form) => {
+  const salvarCliente = async (form, arquivosPendentes = []) => {
     if (!form.nome?.trim()) return showToast('Nome é obrigatório', 'error')
 
     if (form.id) {
@@ -1039,7 +931,26 @@ export default function App() {
       const { data, error } = await supabase.from('clientes').insert(form).select().single()
       if (error) return showToast('Erro ao criar cliente', 'error')
       await supabase.from('historico').insert({ cliente_id: data.id, descricao: 'Cliente cadastrado' })
-      showToast('Cliente criado!')
+
+      // Upload dos arquivos pendentes do modal
+      for (const file of arquivosPendentes) {
+        const ext = file.name.split('.').pop()
+        const path = `${data.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+        const { error: upErr } = await supabase.storage.from('arquivos').upload(path, file)
+        if (upErr) { showToast(`Erro ao enviar ${file.name}`, 'error'); continue }
+        const { data: urlData } = supabase.storage.from('arquivos').getPublicUrl(path)
+        await supabase.from('arquivos').insert({
+          cliente_id: data.id, nome_original: file.name, nome_arquivo: path,
+          caminho_local: urlData.publicUrl, tipo: file.type, tamanho: file.size,
+        })
+        await supabase.from('historico').insert({
+          cliente_id: data.id, descricao: `Arquivo adicionado: ${file.name}`
+        })
+      }
+
+      showToast(arquivosPendentes.length
+        ? `Cliente criado com ${arquivosPendentes.length} arquivo(s)!`
+        : 'Cliente criado!')
       selecionarCliente(data)
     }
     setModal(null)
@@ -1370,10 +1281,11 @@ export default function App() {
                 </div>
 
                 {arquivosFiltrados.map(a => (
-                  <div key={a.id}
+                  <div key={a.id} onClick={() => abrirArquivo(a)}
                     style={{ display:'grid', gridTemplateColumns:'1fr 180px 90px 110px 80px',
                       padding:'11px 16px', background:'#fff', borderRadius:10,
-                      border:'1px solid #EBEBEB', alignItems:'center', transition:'border .12s' }}
+                      border:'1px solid #EBEBEB', alignItems:'center', transition:'border .12s',
+                      cursor:'pointer' }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = '#1565C0'}
                     onMouseLeave={e => e.currentTarget.style.borderColor = '#EBEBEB'}>
                     <div style={{ display:'flex', alignItems:'center', gap:10, minWidth:0 }}>
@@ -1394,12 +1306,7 @@ export default function App() {
                     <span style={{ fontSize:12, color:T.sub }}>{fmtSz(a.tamanho)}</span>
                     <span style={{ fontSize:12, color:T.sub }}>{fmt(a.criado_em)}</span>
                     <div style={{ display:'flex', gap:5, justifyContent:'flex-end' }}>
-                      <button onClick={() => abrirArquivo(a)}
-                        style={{ padding:'5px 8px', background:'#E3F2FD', border:'none',
-                          borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center', color:'#1565C0' }}>
-                        <Ic n="eye" s={12} c="#1565C0"/>
-                      </button>
-                      <button onClick={() => excluirArquivo(a)}
+                      <button onClick={e => { e.stopPropagation(); excluirArquivo(a) }}
                         style={{ padding:'5px 8px', background:'transparent', border:'1px solid #FECACA',
                           color:'#DC2626', borderRadius:6, cursor:'pointer', display:'flex', alignItems:'center' }}>
                         <Ic n="trash" s={12}/>
