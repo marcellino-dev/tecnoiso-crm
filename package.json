@@ -1,6 +1,6 @@
 {
   "name": "tecnoiso-crm",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Sistema de gestão de clientes Tecnoiso",
   "main": "src/main/main.js",
   "scripts": {
@@ -8,7 +8,8 @@
     "dev:electron": "electron .",
     "build": "vite build && electron-builder",
     "build:win": "vite build && electron-builder --win",
-    "release": "vite build && electron-builder --win --publish always",
+    "prerelease": "vite build",
+    "release": "dotenv -e .env -- electron-builder --win --publish always",
     "install:deps": "npm install"
   },
   "build": {
@@ -57,6 +58,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.2",
+    "dotenv-cli": "^7.4.2",
     "electron": "^33.4.0",
     "electron-builder": "^25.1.8",
     "vite": "^6.3.5",
