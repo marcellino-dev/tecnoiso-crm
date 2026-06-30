@@ -8,6 +8,7 @@
     "dev:electron": "electron .",
     "build": "vite build && electron-builder",
     "build:win": "vite build && electron-builder --win",
+    "release": "vite build && electron-builder --win --publish always",
     "install:deps": "npm install"
   },
   "build": {
@@ -20,6 +21,11 @@
       "dist/**/*",
       "src/main/**/*"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "marcellino-dev",
+      "repo": "tecnoiso-crm"
+    },
     "win": {
       "target": [
         {
@@ -43,6 +49,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
+    "electron-updater": "^6.3.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

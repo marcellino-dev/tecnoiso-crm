@@ -1,8 +1,12 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron')
+const { autoUpdater } = require('electron-updater')
 const path = require('path')
 const fs = require('fs')
 
 const isDev = !app.isPackaged
+
+autoUpdater.autoDownload = true
+autoUpdater.autoInstallOnAppQuit = false
 
 const DATA_DIR = path.join(app.getPath('userData'), 'TecnoisoCRM')
 const FILES_DIR = path.join(DATA_DIR, 'arquivos')
@@ -33,8 +37,49 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow()
+  if (!isDev) {
+    autoUpdater.checkForUpdates().catch(() => {})
+  }
+})
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
+
+// ── Auto-update ───────────────────────────────────────────────────────────────
+function enviarParaRenderer(canal, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(canal, payload)
+}
+
+autoUpdater.on('update-available', (info) => {
+  enviarParaRenderer('update:disponivel', { versao: info.version })
+})
+
+autoUpdater.on('download-progress', (progress) => {
+  enviarParaRenderer('update:progresso', { percent: Math.round(progress.percent) })
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+  enviarParaRenderer('update:baixado', { versao: info.version })
+})
+
+autoUpdater.on('error', (err) => {
+  console.error('Erro no auto-update:', err)
+})
+
+ipcMain.handle('update:instalar', () => {
+  autoUpdater.quitAndInstall()
+  return true
+})
+
+ipcMain.handle('update:verificar', async () => {
+  if (isDev) return { ok: false, motivo: 'dev' }
+  try {
+    await autoUpdater.checkForUpdates()
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, motivo: e.message }
+  }
+})
 
 // ── Upload de arquivos ────────────────────────────────────────────────────────
 ipcMain.handle('arquivo:upload', async (_, { clienteId, nome, buffer, tipo }) => {

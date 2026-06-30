@@ -24,19 +24,6 @@ const COLUNAS = [
   { id: 'OUTROS',        label: 'OUTROS',         cor: '#37474F', bg: '#ECEFF1', ico: 'folder'  },
 ]
 
-// Tipos de certificado que a Tecnoiso emite
-const TIPOS_CERT = [
-  'Dimensional',
-  'Elétrico',
-  'Força',
-  'Massa / Balança',
-  'Pressão',
-  'Temperatura',
-  'Torque',
-  'Velocidade',
-  'Outros',
-]
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const av   = (n = '') => (n.trim().slice(0, 2) || '??').toUpperCase()
 const fmt  = (ts) => ts ? new Date(ts).toLocaleDateString('pt-BR') : '—'
@@ -54,6 +41,7 @@ function tipoArquivo(nome = '', tipo = '') {
   if (['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext) || tipo.startsWith('image/')) return 'image'
   if (['xlsx','xls','xlsm','xlsb'].includes(ext)) return 'xlsx'
   if (ext === 'csv') return 'csv'
+  if (ext === 'docx' || ext === 'doc' || tipo === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || tipo === 'application/msword') return 'docx'
   return 'externo'
 }
 
@@ -78,22 +66,14 @@ function Ic({ n, s = 14, c = 'currentColor' }) {
     eye:      <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>,
     external: <><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>,
     mail:     <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
-    phone:    <><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3-8.59A2 2 0 0 1 3.67 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></>,
-    pin:      <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>,
-    clock:    <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
-    info:     <><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></>,
     folder:   <><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></>,
     monitor:  <><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>,
     package:  <><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>,
     drive:    <><path d="M12 2L2 19h20L12 2z"/><path d="M2 19l10-7 10 7"/></>,
     user:     <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
-    award:    <><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></>,
     list:     <><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>,
     grid:     <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></>,
-    wifi:     <><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></>,
-    wifiOff:  <><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></>,
-    filter:   <><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>,
-    cnpj:     <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></>,
+    word:     <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M8 8l2 8 2-6 2 6 2-8"/></>,
   }
   return (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none"
@@ -131,35 +111,401 @@ function Toast({ msg, type = 'ok' }) {
   )
 }
 
-// ─── Helper: letra de coluna tipo Excel (0→A, 25→Z, 26→AA …) ─────────────────
+// ─── Helper: letra de coluna tipo Excel ─────────────────────────────────────
 function colLetter(i) {
   let s = ''; i++
   while (i > 0) { i--; s = String.fromCharCode(65 + (i % 26)) + s; i = Math.floor(i / 26) }
   return s
 }
 
+// ─── Visualizador de DOCX ─────────────────────────────────────────────────────
+function DocxViewer({ url, fileName, onClose }) {
+  const [content, setContent] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [currentResultIndex, setCurrentResultIndex] = useState(-1)
+  const contentRef = useRef(null)
+
+  useEffect(() => {
+    // Carrega o DOCX usando mammoth.js
+    const loadDocx = async () => {
+      try {
+        setLoading(true)
+        // Importa mammoth.js
+        const mammoth = await import('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js')
+        
+        const response = await fetch(url)
+        const arrayBuffer = await response.arrayBuffer()
+        
+        const result = await mammoth.convertToHtml({ arrayBuffer })
+        setContent(result.value)
+        setError(null)
+      } catch (err) {
+        setError('Erro ao carregar o documento: ' + err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadDocx()
+  }, [url])
+
+  // Função de pesquisa no conteúdo
+  const performSearch = useCallback((term) => {
+    if (!term.trim() || !content) {
+      setSearchResults([])
+      setCurrentResultIndex(-1)
+      return
+    }
+
+    const results = []
+    const searchLower = term.toLowerCase()
+    const tempDiv = document.createElement('div')
+    tempDiv.innerHTML = content
+    const textNodes = tempDiv.querySelectorAll('*')
+    
+    textNodes.forEach((node, index) => {
+      const text = node.textContent || ''
+      const textLower = text.toLowerCase()
+      let startIndex = 0
+      
+      while (true) {
+        const foundIndex = textLower.indexOf(searchLower, startIndex)
+        if (foundIndex === -1) break
+        results.push({
+          nodeIndex: index,
+          startIndex: foundIndex,
+          endIndex: foundIndex + term.length,
+          text: text
+        })
+        startIndex = foundIndex + term.length
+      }
+    })
+
+    setSearchResults(results)
+    setCurrentResultIndex(results.length > 0 ? 0 : -1)
+  }, [content])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      performSearch(searchTerm)
+    }, 300)
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, performSearch])
+
+  // Destaca os resultados
+  useEffect(() => {
+    if (!content || !contentRef.current) return
+    
+    const container = contentRef.current
+    // Remove highlights anteriores
+    container.querySelectorAll('.docx-highlight, .docx-highlight-current').forEach(el => {
+      const parent = el.parentNode
+      parent.replaceChild(document.createTextNode(el.textContent), el)
+      parent.normalize()
+    })
+
+    if (searchResults.length === 0 || !searchTerm) return
+
+    // Aplica highlights
+    const walker = document.createTreeWalker(
+      container,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    )
+
+    const textNodes = []
+    let node
+    while (node = walker.nextNode()) {
+      textNodes.push(node)
+    }
+
+    let resultIndex = 0
+    textNodes.forEach(textNode => {
+      const text = textNode.textContent
+      const searchLower = searchTerm.toLowerCase()
+      const textLower = text.toLowerCase()
+      let startIndex = 0
+      let fragments = []
+      let found = false
+
+      while (true) {
+        const foundIndex = textLower.indexOf(searchLower, startIndex)
+        if (foundIndex === -1) break
+        
+        found = true
+        // Texto antes da ocorrência
+        if (foundIndex > startIndex) {
+          fragments.push(document.createTextNode(text.substring(startIndex, foundIndex)))
+        }
+        
+        // Texto destacado
+        const highlight = document.createElement('span')
+        const isCurrent = resultIndex === currentResultIndex
+        highlight.className = isCurrent ? 'docx-highlight-current' : 'docx-highlight'
+        highlight.textContent = text.substring(foundIndex, foundIndex + searchTerm.length)
+        fragments.push(highlight)
+        
+        resultIndex++
+        startIndex = foundIndex + searchTerm.length
+      }
+
+      if (found && startIndex < text.length) {
+        fragments.push(document.createTextNode(text.substring(startIndex)))
+      }
+
+      if (found) {
+        const parent = textNode.parentNode
+        const fragment = document.createDocumentFragment()
+        fragments.forEach(f => fragment.appendChild(f))
+        parent.replaceChild(fragment, textNode)
+        parent.normalize()
+      }
+    })
+  }, [searchResults, currentResultIndex, searchTerm, content])
+
+  const goToNextResult = useCallback(() => {
+    if (searchResults.length === 0) return
+    const nextIndex = (currentResultIndex + 1) % searchResults.length
+    setCurrentResultIndex(nextIndex)
+    // Scroll para o resultado
+    const highlights = contentRef.current.querySelectorAll('.docx-highlight, .docx-highlight-current')
+    if (highlights[nextIndex]) {
+      highlights[nextIndex].scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }
+  }, [searchResults, currentResultIndex])
+
+  const goToPrevResult = useCallback(() => {
+    if (searchResults.length === 0) return
+    const prevIndex = currentResultIndex <= 0 
+      ? searchResults.length - 1 
+      : currentResultIndex - 1
+    setCurrentResultIndex(prevIndex)
+    const highlights = contentRef.current.querySelectorAll('.docx-highlight, .docx-highlight-current')
+    if (highlights[prevIndex]) {
+      highlights[prevIndex].scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }
+  }, [searchResults, currentResultIndex])
+
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.82)', zIndex:1100,
+      display:'flex', flexDirection:'column' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+
+      <style>{`
+        .docx-highlight {
+          background: #FFEB3B !important;
+          border-radius: 2px;
+          font-weight: 700 !important;
+        }
+        .docx-highlight-current {
+          background: #FF6F00 !important;
+          color: #fff !important;
+          border-radius: 2px;
+          font-weight: 700 !important;
+        }
+        .docx-content {
+          font-family: 'Segoe UI', Arial, sans-serif;
+          font-size: 14px;
+          line-height: 1.8;
+          padding: 40px 60px;
+          max-width: 900px;
+          margin: 0 auto;
+          color: #1a1a1a;
+        }
+        .docx-content h1, .docx-content h2, .docx-content h3 {
+          margin-top: 24px;
+          margin-bottom: 12px;
+        }
+        .docx-content p {
+          margin-bottom: 12px;
+        }
+        .docx-content table {
+          border-collapse: collapse;
+          width: 100%;
+          margin: 16px 0;
+        }
+        .docx-content td, .docx-content th {
+          border: 1px solid #ddd;
+          padding: 8px 12px;
+        }
+        .docx-content th {
+          background: #f5f5f5;
+        }
+      `}</style>
+
+      {/* Barra superior */}
+      <div style={{ background:'#1C1C2E', padding:'8px 16px', display:'flex',
+        alignItems:'center', gap:8, borderBottom:'1px solid #2d2d44', flexShrink:0, flexWrap:'wrap' }}>
+        <Ic n="word" s={14} c="#2B579A"/>
+        <span style={{ color:'#fff', fontSize:12, fontWeight:600, flex:1,
+          overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+          {fileName}
+        </span>
+
+        {/* Barra de pesquisa */}
+        <div style={{ display:'flex', alignItems:'center', gap:4, background:'#2d2d44', 
+          borderRadius:6, padding:'2px 6px', flex: '0 1 320px', minWidth:200 }}>
+          <Ic n="search" s={13} c="#9ca3af"/>
+          <input
+            type="text"
+            placeholder="🔍 Pesquisar no documento (Ctrl+F)..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{
+              background:'transparent',
+              border:'none',
+              color:'#fff',
+              padding:'4px 4px',
+              fontSize:12,
+              width:'100%',
+              outline:'none',
+              fontFamily:'inherit',
+              minWidth:120
+            }}
+          />
+          {searchResults.length > 0 && (
+            <span style={{ color:'#4CAF50', fontSize:10, fontWeight:600, whiteSpace:'nowrap' }}>
+              {currentResultIndex + 1}/{searchResults.length}
+            </span>
+          )}
+          {searchTerm && (
+            <>
+              <button onClick={goToPrevResult}
+                style={{ background:'transparent', border:'none', color:'#fff',
+                  cursor:'pointer', padding:'2px 4px', fontSize:14 }}>
+                ↑
+              </button>
+              <button onClick={goToNextResult}
+                style={{ background:'transparent', border:'none', color:'#fff',
+                  cursor:'pointer', padding:'2px 4px', fontSize:14 }}>
+                ↓
+              </button>
+              <button onClick={() => { setSearchTerm(''); setSearchResults([]); setCurrentResultIndex(-1) }}
+                style={{ background:'transparent', border:'none', color:'#9ca3af',
+                  cursor:'pointer', padding:'2px 4px', fontSize:12 }}>
+                ✕
+              </button>
+            </>
+          )}
+        </div>
+
+        <a href={url} download={fileName}
+          style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px',
+            background:'#1565C0', color:'#fff', borderRadius:5, fontSize:10,
+            fontWeight:600, textDecoration:'none', flexShrink:0 }}>
+          <Ic n="external" s={10} c="#fff"/> Download
+        </a>
+        <button onClick={onClose}
+          style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px',
+            background:'#37474F', color:'#fff', border:'none', borderRadius:5,
+            fontSize:10, cursor:'pointer', fontFamily:'inherit', flexShrink:0 }}>
+          <Ic n="x" s={10} c="#fff"/> Fechar
+        </button>
+      </div>
+
+      {/* Conteúdo do DOCX */}
+      <div style={{ flex:1, minHeight:0, overflow:'auto', background:'#f0f0f0' }}>
+        {loading && (
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
+            height:'100%', color:'#6b7280', gap:10, fontSize:14 }}>
+            <Ic n="refresh" s={20} c="#9ca3af"/> Carregando documento...
+          </div>
+        )}
+        {error && (
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'center',
+            justifyContent:'center', height:'100%', color:'#DC2626', gap:10 }}>
+            <Ic n="x" s={32} c="#DC2626"/>
+            <div style={{ fontSize:14 }}>{error}</div>
+            <a href={url} download={fileName}
+              style={{ display:'inline-flex', alignItems:'center', gap:6, marginTop:8,
+                padding:'8px 20px', background:'#1565C0', color:'#fff', borderRadius:8,
+                fontSize:13, fontWeight:600, textDecoration:'none' }}>
+              <Ic n="external" s={13} c="#fff"/> Baixar documento
+            </a>
+          </div>
+        )}
+        {content && !loading && (
+          <div ref={contentRef} 
+            className="docx-content"
+            style={{ background:'#fff', margin: '20px auto', borderRadius:8, boxShadow:'0 2px 12px rgba(0,0,0,0.1)' }}
+            dangerouslySetInnerHTML={{ __html: content }} 
+          />
+        )}
+      </div>
+
+      {/* Rodapé */}
+      <div style={{ background:'#1C1C2E', padding:'4px 16px', display:'flex',
+        alignItems:'center', gap:12, fontSize:10, color:'#6b7280', flexShrink:0, flexWrap:'wrap' }}>
+        {searchTerm && searchResults.length > 0 && (
+          <span style={{ color:'#4CAF50', fontWeight:600 }}>
+            🔍 {searchResults.length} resultado(s) encontrado(s)
+          </span>
+        )}
+        {searchTerm && searchResults.length === 0 && (
+          <span style={{ color:'#EF5350' }}>
+            🔍 Nenhum resultado para "{searchTerm}"
+          </span>
+        )}
+        <span style={{ marginLeft:'auto', color:'#4b5563' }}>
+          Ctrl+F para buscar · ESC para fechar
+        </span>
+      </div>
+    </div>
+  )
+}
+
 // ─── Visualizador de Arquivo Inline ──────────────────────────────────────────
 function FileViewer({ arq, onClose }) {
   const tipo = tipoArquivo(arq.nome_original, arq.tipo || '')
   const url  = arq.caminho_local
+  
+  // Se for DOCX, usa o visualizador específico
+  if (tipo === 'docx') {
+    return <DocxViewer url={url} fileName={arq.nome_original} onClose={onClose} />
+  }
+
   const [xlsxData,    setXlsxData]    = useState(null)
   const [xlsxLoading, setXlsxLoading] = useState(false)
   const [xlsxErr,     setXlsxErr]     = useState(null)
   const [activeSheet, setActiveSheet] = useState(0)
   const [freeze,      setFreeze]      = useState(true)
   const [showEmpty,   setShowEmpty]   = useState(false)
+  
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [currentResultIndex, setCurrentResultIndex] = useState(-1)
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchCaseSensitive, setSearchCaseSensitive] = useState(false)
+  const [searchExactMatch, setSearchExactMatch] = useState(false)
 
-  // Referência para o container de scroll
   const scrollContainerRef = useRef(null)
+  const searchInputRef = useRef(null)
+  const tableRef = useRef(null)
 
-  // Fechar com Escape
   useEffect(() => {
-    const handler = e => { if (e.key === 'Escape') onClose() }
+    const handler = e => { 
+      if (e.key === 'Escape') {
+        if (searchTerm) {
+          setSearchTerm('')
+          setSearchResults([])
+          setCurrentResultIndex(-1)
+        } else {
+          onClose()
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select()
+      }
+    }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  }, [searchTerm, onClose])
 
-  // Carregar XLSX/CSV via SheetJS
   useEffect(() => {
     if (tipo !== 'xlsx' && tipo !== 'csv') return
     setXlsxLoading(true); setXlsxErr(null); setActiveSheet(0)
@@ -191,16 +537,122 @@ function FileViewer({ arq, onClose }) {
   }, [url, tipo])
 
   const sheet = xlsxData?.sheets?.[activeSheet]
-
   const rows = sheet
     ? (showEmpty ? sheet.rows : sheet.rows.filter(r => r.some(c => c !== '')))
     : []
 
   const CELL_MIN_W = 110
-
   const isSpreadsheet = tipo === 'xlsx' || tipo === 'csv'
 
-  // ─── Funções para rolagem ──────────────────────────────────────────────
+  const performSearch = useCallback((term) => {
+    if (!term.trim() || !sheet) {
+      setSearchResults([])
+      setCurrentResultIndex(-1)
+      return
+    }
+
+    setIsSearching(true)
+    const results = []
+    const searchLower = term.toLowerCase()
+    const searchOriginal = term
+
+    rows.forEach((row, rowIndex) => {
+      row.forEach((cell, colIndex) => {
+        if (cell === '' || cell === null || cell === undefined) return
+        
+        const cellStr = String(cell)
+        let match = false
+        
+        if (searchExactMatch) {
+          match = searchCaseSensitive 
+            ? cellStr === searchOriginal 
+            : cellStr.toLowerCase() === searchLower
+        } else {
+          match = searchCaseSensitive 
+            ? cellStr.includes(searchOriginal) 
+            : cellStr.toLowerCase().includes(searchLower)
+        }
+        
+        if (!match && !searchExactMatch) {
+          const numSearch = parseFloat(term.replace(',', '.'))
+          if (!isNaN(numSearch)) {
+            const numCell = parseFloat(cellStr.replace(',', '.'))
+            if (!isNaN(numCell) && Math.abs(numCell - numSearch) < 0.001) {
+              match = true
+            }
+            if (!match) {
+              const searchNormalized = term.replace(/[.,]/g, '')
+              const cellNormalized = cellStr.replace(/[.,]/g, '')
+              if (searchNormalized === cellNormalized) {
+                match = true
+              }
+            }
+          }
+        }
+
+        if (match) {
+          results.push({
+            rowIndex,
+            colIndex,
+            cell: cellStr,
+            preview: cellStr.length > 50 ? cellStr.substring(0, 50) + '...' : cellStr
+          })
+        }
+      })
+    })
+
+    setSearchResults(results)
+    setCurrentResultIndex(results.length > 0 ? 0 : -1)
+    setIsSearching(false)
+
+    if (results.length > 0) {
+      scrollToResult(0)
+    }
+  }, [rows, sheet, searchCaseSensitive, searchExactMatch])
+
+  const scrollToResult = useCallback((index) => {
+    if (index < 0 || index >= searchResults.length) return
+    
+    const result = searchResults[index]
+    setCurrentResultIndex(index)
+    
+    const rowElement = document.querySelector(`[data-row-index="${result.rowIndex}"]`)
+    if (rowElement) {
+      rowElement.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      const cellElement = document.querySelector(
+        `[data-row-index="${result.rowIndex}"] [data-col-index="${result.colIndex}"]`
+      )
+      if (cellElement) {
+        cellElement.style.backgroundColor = '#FFEB3B'
+        cellElement.style.transition = 'background-color 0.3s'
+        setTimeout(() => {
+          cellElement.style.backgroundColor = ''
+        }, 2000)
+      }
+    }
+  }, [searchResults])
+
+  const goToNextResult = useCallback(() => {
+    if (searchResults.length === 0) return
+    const nextIndex = (currentResultIndex + 1) % searchResults.length
+    scrollToResult(nextIndex)
+  }, [searchResults, currentResultIndex, scrollToResult])
+
+  const goToPrevResult = useCallback(() => {
+    if (searchResults.length === 0) return
+    const prevIndex = currentResultIndex <= 0 
+      ? searchResults.length - 1 
+      : currentResultIndex - 1
+    scrollToResult(prevIndex)
+  }, [searchResults, currentResultIndex, scrollToResult])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      performSearch(searchTerm)
+    }, 300)
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, performSearch])
+
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' })
@@ -218,82 +670,146 @@ function FileViewer({ arq, onClose }) {
       display:'flex', flexDirection:'column' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
 
-      {/* ── Barra superior ── */}
-      <div style={{ background:'#1C1C2E', padding:'10px 16px', display:'flex',
-        alignItems:'center', gap:10, borderBottom:'1px solid #2d2d44', flexShrink:0 }}>
-        <Ic n="file" s={15} c="#aaa"/>
-        <span style={{ color:'#fff', fontSize:13, fontWeight:600, flex:1,
+      <div style={{ background:'#1C1C2E', padding:'8px 16px', display:'flex',
+        alignItems:'center', gap:8, borderBottom:'1px solid #2d2d44', flexShrink:0, flexWrap:'wrap' }}>
+        <Ic n="file" s={14} c="#aaa"/>
+        <span style={{ color:'#fff', fontSize:12, fontWeight:600, flex:1,
           overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
           {arq.nome_original}
         </span>
-        <span style={{ color:'#6b7280', fontSize:11, flexShrink:0 }}>{fmtSz(arq.tamanho)}</span>
+        <span style={{ color:'#6b7280', fontSize:10, flexShrink:0 }}>{fmtSz(arq.tamanho)}</span>
+
+        {isSpreadsheet && xlsxData && (
+          <div style={{ display:'flex', alignItems:'center', gap:4, background:'#2d2d44', 
+            borderRadius:6, padding:'2px 6px', flex: '0 1 320px', minWidth:200 }}>
+            <Ic n="search" s={13} c="#9ca3af"/>
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="🔍 Pesquisar (Ctrl+F)..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{
+                background:'transparent',
+                border:'none',
+                color:'#fff',
+                padding:'4px 4px',
+                fontSize:12,
+                width:'100%',
+                outline:'none',
+                fontFamily:'inherit',
+                minWidth:120
+              }}
+            />
+            {searchResults.length > 0 && (
+              <span style={{ color:'#4CAF50', fontSize:10, fontWeight:600, whiteSpace:'nowrap' }}>
+                {currentResultIndex + 1}/{searchResults.length}
+              </span>
+            )}
+            {searchTerm && (
+              <>
+                <button onClick={goToPrevResult}
+                  style={{ background:'transparent', border:'none', color:'#fff',
+                    cursor:'pointer', padding:'2px 4px', fontSize:14 }}>
+                  ↑
+                </button>
+                <button onClick={goToNextResult}
+                  style={{ background:'transparent', border:'none', color:'#fff',
+                    cursor:'pointer', padding:'2px 4px', fontSize:14 }}>
+                  ↓
+                </button>
+                <button onClick={() => { setSearchTerm(''); setSearchResults([]); setCurrentResultIndex(-1) }}
+                  style={{ background:'transparent', border:'none', color:'#9ca3af',
+                    cursor:'pointer', padding:'2px 4px', fontSize:12 }}>
+                  ✕
+                </button>
+              </>
+            )}
+            <button onClick={() => setSearchCaseSensitive(!searchCaseSensitive)}
+              style={{
+                background: searchCaseSensitive ? '#1565C0' : 'transparent',
+                border:'none', color: searchCaseSensitive ? '#fff' : '#9ca3af',
+                cursor:'pointer', padding:'2px 6px', borderRadius:4, fontSize:10,
+                fontFamily:'inherit'
+              }} title="Diferenciar maiúsculas/minúsculas">Aa</button>
+            <button onClick={() => setSearchExactMatch(!searchExactMatch)}
+              style={{
+                background: searchExactMatch ? '#1565C0' : 'transparent',
+                border:'none', color: searchExactMatch ? '#fff' : '#9ca3af',
+                cursor:'pointer', padding:'2px 6px', borderRadius:4, fontSize:10,
+                fontFamily:'inherit'
+              }} title="Busca exata">"="</button>
+          </div>
+        )}
 
         {isSpreadsheet && xlsxData && (
           <>
             <button onClick={() => setFreeze(f => !f)}
-              title={freeze ? 'Descongelar cabeçalho' : 'Congelar cabeçalho'}
-              style={{ padding:'4px 10px', background: freeze ? '#1565C0' : '#37474F',
-                color:'#fff', border:'none', borderRadius:6, fontSize:11,
+              style={{ padding:'3px 8px', background: freeze ? '#1565C0' : '#37474F',
+                color:'#fff', border:'none', borderRadius:4, fontSize:10,
                 cursor:'pointer', fontFamily:'inherit', flexShrink:0 }}>
-              {freeze ? '🔒 Cabeçalho fixo' : '🔓 Cabeçalho livre'}
+              {freeze ? '🔒' : '🔓'}
             </button>
             <button onClick={() => setShowEmpty(s => !s)}
-              title={showEmpty ? 'Ocultar linhas vazias' : 'Mostrar linhas vazias'}
-              style={{ padding:'4px 10px', background: showEmpty ? '#37474F' : '#23233a',
+              style={{ padding:'3px 8px', background: showEmpty ? '#37474F' : '#23233a',
                 color: showEmpty ? '#fff' : '#9ca3af', border:'1px solid #444',
-                borderRadius:6, fontSize:11, cursor:'pointer', fontFamily:'inherit', flexShrink:0 }}>
-              {showEmpty ? 'Ocultar vazias' : 'Mostrar vazias'}
+                borderRadius:4, fontSize:10, cursor:'pointer', fontFamily:'inherit', flexShrink:0 }}>
+              {showEmpty ? 'Ocultar' : 'Mostrar'}
             </button>
           </>
         )}
 
         <a href={url} download={arq.nome_original}
-          style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 12px',
-            background:'#1565C0', color:'#fff', borderRadius:7, fontSize:11,
+          style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px',
+            background:'#1565C0', color:'#fff', borderRadius:5, fontSize:10,
             fontWeight:600, textDecoration:'none', flexShrink:0 }}>
-          <Ic n="external" s={11} c="#fff"/> Download
+          <Ic n="external" s={10} c="#fff"/> Download
         </a>
         <button onClick={onClose}
-          style={{ display:'flex', alignItems:'center', gap:5, padding:'5px 11px',
-            background:'#37474F', color:'#fff', border:'none', borderRadius:7,
-            fontSize:11, cursor:'pointer', fontFamily:'inherit', flexShrink:0 }}>
-          <Ic n="x" s={11} c="#fff"/> Fechar
+          style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px',
+            background:'#37474F', color:'#fff', border:'none', borderRadius:5,
+            fontSize:10, cursor:'pointer', fontFamily:'inherit', flexShrink:0 }}>
+          <Ic n="x" s={10} c="#fff"/> Fechar
         </button>
       </div>
 
-      {/* ── Abas de sheet ── */}
       {isSpreadsheet && xlsxData && (
-        <div style={{ background:'#16162a', display:'flex', gap:1, padding:'6px 12px 0',
+        <div style={{ background:'#16162a', display:'flex', gap:1, padding:'4px 12px 0',
           borderBottom:'1px solid #2d2d44', overflowX:'auto', flexShrink:0,
           scrollbarWidth:'thin' }}>
-          {xlsxData.sheets.map((s, i) => (
-            <button key={i} onClick={() => setActiveSheet(i)}
-              style={{ padding:'5px 16px', fontSize:11, fontWeight:600, border:'none',
-                borderRadius:'6px 6px 0 0', cursor:'pointer', fontFamily:'inherit',
-                flexShrink:0, whiteSpace:'nowrap', transition:'background .1s',
-                background: i === activeSheet ? '#fff' : '#23233a',
-                color:       i === activeSheet ? '#1a1a2e' : '#9ca3af',
-                borderBottom: i === activeSheet ? '2px solid #1565C0' : '2px solid transparent' }}>
-              📄 {s.name}
-              <span style={{ marginLeft:6, fontSize:9, opacity:.6 }}>
-                {s.rows.length}L × {s.maxCols}C
-              </span>
-            </button>
-          ))}
+          {xlsxData.sheets.map((s, i) => {
+            const resultCount = searchTerm ? searchResults.filter(r => 
+              r.rowIndex < s.rows.length
+            ).length : 0
+            return (
+              <button key={i} onClick={() => setActiveSheet(i)}
+                style={{ padding:'4px 14px', fontSize:10, fontWeight:600, border:'none',
+                  borderRadius:'5px 5px 0 0', cursor:'pointer', fontFamily:'inherit',
+                  flexShrink:0, whiteSpace:'nowrap', transition:'background .1s',
+                  background: i === activeSheet ? '#fff' : '#23233a',
+                  color:       i === activeSheet ? '#1a1a2e' : '#9ca3af',
+                  borderBottom: i === activeSheet ? '2px solid #1565C0' : '2px solid transparent' }}>
+                📄 {s.name}
+                {resultCount > 0 && (
+                  <span style={{ marginLeft:6, background:'#4CAF50', color:'#fff',
+                    padding:'0 6px', borderRadius:8, fontSize:8 }}>
+                    {resultCount}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
 
-      {/* ── Área de conteúdo ── */}
       <div style={{ flex:1, minHeight:0, display:'flex', flexDirection:'column',
         background:'#fff', overflow:'hidden', position:'relative' }}>
 
-        {/* PDF */}
         {tipo === 'pdf' && (
           <iframe src={url} title={arq.nome_original}
             style={{ width:'100%', height:'100%', border:'none', flex:1 }} />
         )}
 
-        {/* Imagem */}
         {tipo === 'image' && (
           <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center',
             background:'#111', overflow:'auto' }}>
@@ -302,23 +818,18 @@ function FileViewer({ arq, onClose }) {
           </div>
         )}
 
-        {/* XLSX / CSV — com scroll customizado e botões de navegação */}
         {isSpreadsheet && (
           <>
-            {/* ── Container com scroll ── */}
             <div ref={scrollContainerRef}
               style={{
                 flex:1,
                 overflow:'auto',
                 position:'relative',
-                // ─── SCROLLBAR PERSONALIZADA (visível com cores verdes, branca e cinza) ───
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#4CAF50 #E8E8E8',
               }}
             >
-              {/* WebKit scrollbar styles via style tag */}
               <style>{`
-                /* Para Chrome, Safari e Edge */
                 .file-viewer-scroll::-webkit-scrollbar {
                   width: 10px;
                   height: 12px;
@@ -337,6 +848,17 @@ function FileViewer({ arq, onClose }) {
                 }
                 .file-viewer-scroll::-webkit-scrollbar-corner {
                   background: #E8E8E8;
+                }
+                .search-highlight {
+                  background: #FFEB3B !important;
+                  border-radius: 2px;
+                  font-weight: 700 !important;
+                }
+                .search-highlight-current {
+                  background: #FF6F00 !important;
+                  color: #fff !important;
+                  border-radius: 2px;
+                  font-weight: 700 !important;
                 }
               `}</style>
 
@@ -364,7 +886,7 @@ function FileViewer({ arq, onClose }) {
 
               {sheet && rows.length > 0 && (
                 <div className="file-viewer-scroll" style={{ width: '100%', height: '100%' }}>
-                  <table style={{
+                  <table ref={tableRef} style={{
                     borderCollapse:'collapse', fontSize:12,
                     tableLayout:'auto',
                     width:'max-content', minWidth:'100%',
@@ -396,10 +918,14 @@ function FileViewer({ arq, onClose }) {
                     <tbody>
                       {rows.map((row, ri) => {
                         const isFirstDataRow = ri === 0
+                        const rowHasResults = searchResults.some(r => r.rowIndex === ri)
                         return (
-                          <tr key={ri} style={{
+                          <tr key={ri} data-row-index={ri} style={{
                             background: isFirstDataRow ? '#EEF2FF'
-                              : ri % 2 === 0 ? '#FAFAFA' : '#fff'
+                              : ri % 2 === 0 ? '#FAFAFA' : '#fff',
+                            ...(rowHasResults && searchTerm ? { 
+                              borderLeft: '3px solid #4CAF50' 
+                            } : {})
                           }}>
                             <td style={{
                               position:'sticky', left:0, zIndex:1,
@@ -413,8 +939,35 @@ function FileViewer({ arq, onClose }) {
 
                             {row.map((cell, ci) => {
                               const vazio = cell === '' || cell === null || cell === undefined
+                              const cellStr = vazio ? '' : String(cell)
+                              
+                              const isResult = searchResults.some(r => 
+                                r.rowIndex === ri && r.colIndex === ci
+                              )
+                              const isCurrentResult = searchResults.some((r, idx) => 
+                                r.rowIndex === ri && r.colIndex === ci && idx === currentResultIndex
+                              )
+
+                              let displayContent = cellStr
+                              if (isResult && searchTerm && !vazio) {
+                                const searchLower = searchTerm.toLowerCase()
+                                const cellLower = cellStr.toLowerCase()
+                                const index = cellLower.indexOf(searchLower)
+                                if (index !== -1) {
+                                  displayContent = (
+                                    <>
+                                      {cellStr.substring(0, index)}
+                                      <span className={isCurrentResult ? 'search-highlight-current' : 'search-highlight'}>
+                                        {cellStr.substring(index, index + searchTerm.length)}
+                                      </span>
+                                      {cellStr.substring(index + searchTerm.length)}
+                                    </>
+                                  )
+                                }
+                              }
+
                               return (
-                                <td key={ci} style={{
+                                <td key={ci} data-row-index={ri} data-col-index={ci} style={{
                                   border:'1px solid #E0E0E0',
                                   padding:'5px 10px',
                                   whiteSpace:'nowrap',
@@ -426,9 +979,18 @@ function FileViewer({ arq, onClose }) {
                                   fontWeight: isFirstDataRow ? 700 : 400,
                                   background: isFirstDataRow ? '#EEF2FF' : undefined,
                                   verticalAlign:'top',
+                                  ...(isCurrentResult ? {
+                                    backgroundColor: '#FF6F00',
+                                    color: '#fff',
+                                    outline: '2px solid #FF6F00',
+                                    outlineOffset: '-1px'
+                                  } : {}),
+                                  ...(isResult && !isCurrentResult ? {
+                                    backgroundColor: '#FFF9C4'
+                                  } : {})
                                 }}
-                                title={vazio ? '' : String(cell)}>
-                                  {vazio ? '' : String(cell)}
+                                title={vazio ? '' : cellStr}>
+                                  {displayContent}
                                 </td>
                               )
                             })}
@@ -441,33 +1003,17 @@ function FileViewer({ arq, onClose }) {
               )}
             </div>
 
-            {/* ─── Botões de navegação horizontal ─── */}
             {!xlsxLoading && !xlsxErr && sheet && rows.length > 0 && (
               <>
-                {/* Botão esquerdo */}
-                <button
-                  onClick={scrollLeft}
+                <button onClick={scrollLeft}
                   style={{
-                    position:'absolute',
-                    left:8,
-                    top:'50%',
-                    transform:'translateY(-50%)',
-                    zIndex:10,
-                    width:36,
-                    height:36,
-                    borderRadius:'50%',
-                    background:'rgba(76, 175, 80, 0.9)',
-                    color:'#fff',
-                    border:'2px solid #fff',
-                    boxShadow:'0 2px 12px rgba(0,0,0,0.25)',
-                    cursor:'pointer',
-                    display:'flex',
-                    alignItems:'center',
-                    justifyContent:'center',
-                    fontSize:20,
-                    fontWeight:'bold',
-                    transition:'all 0.2s ease',
-                    fontFamily:'inherit',
+                    position:'absolute', left:8, top:'50%', transform:'translateY(-50%)',
+                    zIndex:10, width:34, height:34, borderRadius:'50%',
+                    background:'rgba(76, 175, 80, 0.9)', color:'#fff', border:'2px solid #fff',
+                    boxShadow:'0 2px 12px rgba(0,0,0,0.25)', cursor:'pointer',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize:18, fontWeight:'bold', transition:'all 0.2s ease',
+                    fontFamily:'inherit'
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.background = '#388E3C'
@@ -476,35 +1022,18 @@ function FileViewer({ arq, onClose }) {
                   onMouseLeave={e => {
                     e.currentTarget.style.background = 'rgba(76, 175, 80, 0.9)'
                     e.currentTarget.style.transform = 'translateY(-50%) scale(1)'
-                  }}
-                >
+                  }}>
                   ‹
                 </button>
-
-                {/* Botão direito */}
-                <button
-                  onClick={scrollRight}
+                <button onClick={scrollRight}
                   style={{
-                    position:'absolute',
-                    right:8,
-                    top:'50%',
-                    transform:'translateY(-50%)',
-                    zIndex:10,
-                    width:36,
-                    height:36,
-                    borderRadius:'50%',
-                    background:'rgba(76, 175, 80, 0.9)',
-                    color:'#fff',
-                    border:'2px solid #fff',
-                    boxShadow:'0 2px 12px rgba(0,0,0,0.25)',
-                    cursor:'pointer',
-                    display:'flex',
-                    alignItems:'center',
-                    justifyContent:'center',
-                    fontSize:20,
-                    fontWeight:'bold',
-                    transition:'all 0.2s ease',
-                    fontFamily:'inherit',
+                    position:'absolute', right:8, top:'50%', transform:'translateY(-50%)',
+                    zIndex:10, width:34, height:34, borderRadius:'50%',
+                    background:'rgba(76, 175, 80, 0.9)', color:'#fff', border:'2px solid #fff',
+                    boxShadow:'0 2px 12px rgba(0,0,0,0.25)', cursor:'pointer',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize:18, fontWeight:'bold', transition:'all 0.2s ease',
+                    fontFamily:'inherit'
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.background = '#388E3C'
@@ -513,8 +1042,7 @@ function FileViewer({ arq, onClose }) {
                   onMouseLeave={e => {
                     e.currentTarget.style.background = 'rgba(76, 175, 80, 0.9)'
                     e.currentTarget.style.transform = 'translateY(-50%) scale(1)'
-                  }}
-                >
+                  }}>
                   ›
                 </button>
               </>
@@ -522,7 +1050,6 @@ function FileViewer({ arq, onClose }) {
           </>
         )}
 
-        {/* Outros formatos */}
         {tipo === 'externo' && (
           <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center',
             background:'#111' }}>
@@ -542,19 +1069,28 @@ function FileViewer({ arq, onClose }) {
         )}
       </div>
 
-      {/* ── Rodapé ── */}
       {isSpreadsheet && sheet && !xlsxLoading && (
-        <div style={{ background:'#1C1C2E', padding:'5px 16px', display:'flex',
-          alignItems:'center', gap:16, fontSize:10, color:'#6b7280', flexShrink:0 }}>
+        <div style={{ background:'#1C1C2E', padding:'4px 16px', display:'flex',
+          alignItems:'center', gap:12, fontSize:10, color:'#6b7280', flexShrink:0, flexWrap:'wrap' }}>
           <span>📊 <strong style={{ color:'#9ca3af' }}>{sheet.name}</strong></span>
           <span>{rows.length} linhas × {sheet.maxCols} colunas</span>
           {!showEmpty && sheet.rows.length !== rows.length && (
             <span style={{ color:'#4b5563' }}>
-              ({sheet.rows.length - rows.length} linhas vazias ocultas)
+              ({sheet.rows.length - rows.length} vazias ocultas)
+            </span>
+          )}
+          {searchTerm && searchResults.length > 0 && (
+            <span style={{ color:'#4CAF50', fontWeight:600 }}>
+              🔍 {searchResults.length} resultado(s) encontrado(s)
+            </span>
+          )}
+          {searchTerm && searchResults.length === 0 && !isSearching && (
+            <span style={{ color:'#EF5350' }}>
+              🔍 Nenhum resultado para "{searchTerm}"
             </span>
           )}
           <span style={{ marginLeft:'auto', color:'#4b5563' }}>
-            Use as setas laterais ou scroll · ESC para fechar
+            Ctrl+F para buscar · ESC para fechar
           </span>
         </div>
       )}
@@ -600,7 +1136,6 @@ function ModalCliente({ cliente, onSave, onClose }) {
       <div style={{ background:'#fff', borderRadius:14, width:640, maxHeight:'92vh',
         overflow:'auto', padding:'26px 28px', boxShadow:'0 24px 64px rgba(0,0,0,.22)' }}>
 
-        {/* Header */}
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:22 }}>
           <div>
             <h2 style={{ fontSize:16, fontWeight:700, color:'#111', margin:0 }}>
@@ -615,7 +1150,6 @@ function ModalCliente({ cliente, onSave, onClose }) {
           </button>
         </div>
 
-        {/* Seção: Identificação */}
         <div style={{ fontSize:11, fontWeight:700, color:T.red, textTransform:'uppercase',
           letterSpacing:'0.08em', marginBottom:12, paddingBottom:6, borderBottom:`1px solid ${T.redLight}` }}>
           Identificação
@@ -629,7 +1163,6 @@ function ModalCliente({ cliente, onSave, onClose }) {
           </div>
         </div>
 
-        {/* Seção: Certificação */}
         <div style={{ fontSize:11, fontWeight:700, color:T.red, textTransform:'uppercase',
           letterSpacing:'0.08em', marginBottom:12, paddingBottom:6, borderBottom:`1px solid ${T.redLight}` }}>
           Certificação
@@ -649,7 +1182,6 @@ function ModalCliente({ cliente, onSave, onClose }) {
           </div>
         </div>
 
-        {/* Observações */}
         <div style={{ fontSize:11, fontWeight:700, color:T.red, textTransform:'uppercase',
           letterSpacing:'0.08em', marginBottom:12, paddingBottom:6, borderBottom:`1px solid ${T.redLight}` }}>
           Observações e regras especiais
@@ -662,7 +1194,6 @@ function ModalCliente({ cliente, onSave, onClose }) {
           onBlur={e => e.target.style.borderColor = '#E0E0E0'}
         />
 
-        {/* Arquivos — só no cadastro novo */}
         {!cliente?.id && (
           <>
             <div style={{ fontSize:11, fontWeight:700, color:T.red, textTransform:'uppercase',
@@ -671,7 +1202,6 @@ function ModalCliente({ cliente, onSave, onClose }) {
               Arquivos
             </div>
 
-            {/* Zona de drop / botão */}
             <div onClick={selecionarArquivos}
               style={{ border:'1.5px dashed #D1D5DB', borderRadius:9, padding:'16px 14px',
                 textAlign:'center', cursor:'pointer', marginBottom: arquivosPendentes.length ? 10 : 18,
@@ -682,10 +1212,9 @@ function ModalCliente({ cliente, onSave, onClose }) {
               <div style={{ fontSize:12, color:'#9ca3af', marginTop:5 }}>
                 Clique para adicionar arquivos
               </div>
-              <div style={{ fontSize:10, color:'#bbb', marginTop:2 }}>PDF, planilhas, imagens e mais</div>
+              <div style={{ fontSize:10, color:'#bbb', marginTop:2 }}>PDF, planilhas, imagens, DOCX e mais</div>
             </div>
 
-            {/* Lista de arquivos pendentes */}
             {arquivosPendentes.length > 0 && (
               <div style={{ marginBottom:18, display:'flex', flexDirection:'column', gap:5 }}>
                 {arquivosPendentes.map((f, i) => (
@@ -711,7 +1240,6 @@ function ModalCliente({ cliente, onSave, onClose }) {
           </>
         )}
 
-        {/* Rodapé */}
         <div style={{ display:'flex', justifyContent:'flex-end', gap:8, marginTop:22,
           paddingTop:18, borderTop:'1px solid #F0F0F0' }}>
           <button style={{ padding:'8px 16px', background:'transparent', color:'#616161',
@@ -777,13 +1305,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
 
   const col = COLUNAS.find(cl => cl.id === colDeCliente(c)) || COLUNAS[4]
 
-  const secTit = (label) => (
-    <div style={{ fontSize:10, fontWeight:800, color:T.sub, textTransform:'uppercase',
-      letterSpacing:'0.1em', marginBottom:10, marginTop:16, paddingBottom:6,
-      borderBottom:'1px solid #F0F0F0', display:'flex', alignItems:'center', gap:6 }}>
-      {label}
-    </div>
-  )
   const campo = (label, valor, link) => valor ? (
     <div style={{ marginBottom:10 }}>
       <div style={{ fontSize:10, fontWeight:700, color:'#9ca3af', textTransform:'uppercase',
@@ -798,8 +1319,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
     </div>
   ) : null
 
-  const statusCor = { Ativo: '#2E7D32', Inativo: '#C62828', Pendente: '#E65100' }
-
   return (
     <div style={{ position:'fixed', inset:0, zIndex:700, display:'flex' }}>
       <div style={{ flex:1, background:'rgba(0,0,0,.28)' }} onClick={onClose}/>
@@ -807,7 +1326,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
       <div style={{ width:580, height:'100%', background:'#F7F8FA', display:'flex',
         flexDirection:'column', boxShadow:'-6px 0 36px rgba(0,0,0,.14)', overflow:'hidden' }}>
 
-        {/* ── Header ── */}
         <div style={{ background:'#fff', padding:'18px 20px 14px', borderBottom:'1px solid #EBEBEB' }}>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
             <Av nome={c.nome} size={46}/>
@@ -817,14 +1335,12 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
                 {c.nome}
               </div>
               <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:5, flexWrap:'wrap' }}>
-                {/* Badge forma entrega */}
                 <span style={{ background:col.bg, color:col.cor, fontSize:10, fontWeight:700,
                   padding:'2px 9px', borderRadius:5, border:`1px solid ${col.cor}22` }}>
                   {col.label}
                 </span>
               </div>
             </div>
-            {/* Ações */}
             <div style={{ display:'flex', gap:5, flexShrink:0 }}>
               <button onClick={onEdit}
                 style={{ padding:'6px 12px', background:'transparent', border:'1px solid #E0E0E0',
@@ -845,7 +1361,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
           </div>
         </div>
 
-        {/* ── Abas ── */}
         <div style={{ background:'#fff', display:'flex', borderBottom:'1px solid #E5E7EB', flexShrink:0 }}>
           {[
             ['ficha',    '📋 Ficha'],
@@ -862,13 +1377,10 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
           ))}
         </div>
 
-        {/* ── Conteúdo ── */}
         <div style={{ flex:1, overflowY:'auto', padding:'16px 20px 24px' }}>
 
-          {/* ──── ABA FICHA ──── */}
           {aba === 'ficha' && (
             <>
-              {/* Bloco certificação — destaque */}
               <div style={{ background:'#fff', border:`1.5px solid ${col.cor}33`,
                 borderLeft:`4px solid ${col.cor}`, borderRadius:10, padding:'14px 16px', marginBottom:12 }}>
                 <div style={{ fontSize:10, fontWeight:800, color:col.cor, textTransform:'uppercase',
@@ -881,7 +1393,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
                 </div>
               </div>
 
-              {/* Observações — destaque amarelo */}
               {c.observacoes && (
                 <div style={{ background:'#FFFBEB', border:'1px solid #FDE68A',
                   borderLeft:'4px solid #F59E0B', borderRadius:10, padding:'12px 14px', marginBottom:12 }}>
@@ -893,7 +1404,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
                 </div>
               )}
 
-              {/* Últimos arquivos */}
               <div style={{ background:'#fff', border:'1px solid #EBEBEB', borderRadius:10, padding:'14px 16px' }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
                   <div style={{ fontSize:10, fontWeight:800, color:T.sub, textTransform:'uppercase', letterSpacing:'0.1em' }}>
@@ -937,7 +1447,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
             </>
           )}
 
-          {/* ──── ABA ARQUIVOS ──── */}
           {aba === 'arquivos' && (
             <>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
@@ -959,7 +1468,7 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
                   onMouseLeave={e => e.currentTarget.style.borderColor = '#D1D5DB'}>
                   <Ic n="upload" s={32} c="#D1D5DB"/>
                   <div style={{ fontSize:13, marginTop:12 }}>Clique para enviar arquivos</div>
-                  <div style={{ fontSize:11, marginTop:4 }}>PDF, planilhas, imagens e mais</div>
+                  <div style={{ fontSize:11, marginTop:4 }}>PDF, planilhas, DOCX, imagens e mais</div>
                 </div>
               )}
 
@@ -985,7 +1494,6 @@ function Drawer({ c, arquivos, historico, onClose, onEdit, onDelete, onUpload, o
             </>
           )}
 
-          {/* ──── ABA HISTÓRICO ──── */}
           {aba === 'historico' && (
             <>
               <h3 style={{ fontSize:14, fontWeight:700, color:'#111', marginBottom:16 }}>Histórico de atividades</h3>
@@ -1028,7 +1536,6 @@ function KCard({ c, col, onClick }) {
         boxShadow: hov ? `0 4px 14px ${col.cor}22` : '0 1px 3px rgba(0,0,0,.06)',
         transition:'all .14s' }}>
 
-      {/* Linha 1 — nome */}
       <div style={{ display:'flex', alignItems:'center', gap:7, minWidth:0, marginBottom:6 }}>
         <Av nome={c.nome} size={24}/>
         <span style={{ fontSize:12, fontWeight:700, color:'#111',
@@ -1037,7 +1544,6 @@ function KCard({ c, col, onClick }) {
         </span>
       </div>
 
-      {/* Observações — truncadas */}
       {c.observacoes && (
         <div style={{ fontSize:11, color:'#757575', lineHeight:1.4,
           overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2,
@@ -1054,7 +1560,6 @@ function KCol({ col, clientes, onCardClick }) {
   return (
     <div style={{ minWidth:230, width:230, display:'flex', flexDirection:'column',
       flexShrink:0, height:'100%', maxHeight:'100%' }}>
-      {/* Header */}
       <div style={{ background:'#fff', borderRadius:'10px 10px 0 0', padding:'11px 14px 9px',
         borderBottom:`3px solid ${col.cor}`, boxShadow:'0 1px 4px rgba(0,0,0,.06)', flexShrink:0 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -1072,7 +1577,6 @@ function KCol({ col, clientes, onCardClick }) {
         </div>
       </div>
 
-      {/* Cards — scroll vertical aqui */}
       <div style={{ flex:1, minHeight:0, overflowY:'auto', overflowX:'hidden',
         padding:'8px 6px', background:'rgba(0,0,0,.018)',
         borderRadius:'0 0 10px 10px' }}>
@@ -1090,6 +1594,47 @@ function KCol({ col, clientes, onCardClick }) {
 }
 
 // ─── APP PRINCIPAL ────────────────────────────────────────────────────────────
+// ─── Banner de atualização automática ────────────────────────────────────────
+function UpdateBanner({ info }) {
+  const baixando = info.status === 'baixando'
+  return (
+    <div style={{ position:'fixed', bottom:18, right:18, zIndex:1300,
+      width:300, background:'#1C1C2E', borderRadius:12, padding:'14px 16px',
+      boxShadow:'0 8px 28px rgba(0,0,0,.35)', border:'1px solid #2d2d44',
+      animation:'slideIn .3s ease' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+        <Ic n="refresh" s={15} c={baixando ? '#60A5FA' : '#4ADE80'}/>
+        <span style={{ color:'#fff', fontSize:12, fontWeight:700, flex:1 }}>
+          {baixando ? 'Baixando atualização...' : 'Atualização pronta'}
+        </span>
+        <span style={{ color:'#6b7280', fontSize:10 }}>v{info.versao}</span>
+      </div>
+
+      {baixando && (
+        <div style={{ height:5, background:'#2d2d44', borderRadius:99, overflow:'hidden' }}>
+          <div style={{ height:'100%', width:`${info.percent || 0}%`,
+            background:'#1565C0', transition:'width .2s' }} />
+        </div>
+      )}
+
+      {!baixando && (
+        <>
+          <div style={{ color:'#9ca3af', fontSize:11, marginBottom:10 }}>
+            Reinicie o app para aplicar a nova versão.
+          </div>
+          <button
+            onClick={() => window.electronAPI?.instalarUpdate?.()}
+            style={{ width:'100%', padding:'7px 0', background:'#1565C0', color:'#fff',
+              border:'none', borderRadius:7, fontSize:12, fontWeight:700,
+              cursor:'pointer', fontFamily:'inherit' }}>
+            Reiniciar e instalar agora
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function App() {
   const [clientes, setClientes]         = useState([])
   const [selecionado, setSelecionado]   = useState(null)
@@ -1105,6 +1650,7 @@ export default function App() {
   const [loading, setLoading]           = useState(true)
   const [fileViewer, setFileViewer]     = useState(null)
   const [view, setView]                 = useState('board')
+  const [updateInfo, setUpdateInfo]     = useState(null) // { status:'baixando'|'pronta', versao, percent }
 
   const showToast = (msg, type = 'ok') => {
     setToast({ msg, type })
@@ -1112,7 +1658,17 @@ export default function App() {
     _tt = setTimeout(() => setToast(null), 3200)
   }
 
-  // ── Carregar ───────────────────────────────────────────────────────────────
+  // ── Auto-update ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!window.electronAPI?.onUpdateDisponivel) return
+    window.electronAPI.onUpdateDisponivel(({ versao }) =>
+      setUpdateInfo({ status: 'baixando', versao, percent: 0 }))
+    window.electronAPI.onUpdateProgresso(({ percent }) =>
+      setUpdateInfo(prev => prev ? { ...prev, percent } : prev))
+    window.electronAPI.onUpdateBaixado(({ versao }) =>
+      setUpdateInfo({ status: 'pronta', versao }))
+  }, [])
+
   const carregarClientes = useCallback(async () => {
     const { data, error } = await supabase.from('clientes').select('*').order('nome')
     if (error) { setOnline(false); showToast('Erro ao conectar ao banco', 'error') }
@@ -1130,7 +1686,6 @@ export default function App() {
 
   useEffect(() => { carregarClientes(); carregarTodosArquivos() }, [carregarClientes, carregarTodosArquivos])
 
-  // ── Realtime ───────────────────────────────────────────────────────────────
   useEffect(() => {
     const canal = supabase.channel('crm-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, payload => {
@@ -1173,7 +1728,6 @@ export default function App() {
     carregarHistorico(c.id)
   }
 
-  // ── CRUD ───────────────────────────────────────────────────────────────────
   const salvarCliente = async (form, arquivosPendentes = []) => {
     if (!form.nome?.trim()) return showToast('Nome é obrigatório', 'error')
 
@@ -1220,7 +1774,6 @@ export default function App() {
     showToast('Cliente excluído')
   }
 
-  // ── Arquivos ───────────────────────────────────────────────────────────────
   const uploadArquivo = async () => {
     if (!selecionado) return
     const input = document.createElement('input')
@@ -1259,11 +1812,13 @@ export default function App() {
 
   const abrirArquivo = (arq) => {
     const tipo = tipoArquivo(arq.nome_original, arq.tipo || '')
-    if (tipo === 'pdf' || tipo === 'image' || tipo === 'xlsx' || tipo === 'csv') setFileViewer(arq)
-    else if (arq.caminho_local) window.open(arq.caminho_local, '_blank')
+    if (tipo === 'pdf' || tipo === 'image' || tipo === 'xlsx' || tipo === 'csv' || tipo === 'docx') {
+      setFileViewer(arq)
+    } else if (arq.caminho_local) {
+      window.open(arq.caminho_local, '_blank')
+    }
   }
 
-  // ── Filtros ────────────────────────────────────────────────────────────────
   const clientesFiltrados = clientes.filter(c => {
     const q = busca.toLowerCase()
     return !busca ||
@@ -1281,19 +1836,15 @@ export default function App() {
       a.clientes?.nome?.toLowerCase().includes(q)
   })
 
-  // Métricas resumo
   const totalAtivos   = clientes.filter(c => c.status !== 'Inativo').length
   const totalInativos = clientes.filter(c => c.status === 'Inativo').length
 
-  // ── RENDER ─────────────────────────────────────────────────────────────────
   return (
     <div style={{ display:'flex', height:'100vh', fontFamily:'Inter,system-ui,sans-serif',
       fontSize:13, color:T.text, background:T.bg, overflow:'hidden' }}>
 
-      {/* ══ SIDEBAR ══ */}
       <div style={{ width:54, background:T.sidebar, display:'flex', flexDirection:'column',
         alignItems:'center', paddingTop:14, paddingBottom:14, flexShrink:0, height:'100vh' }}>
-        {/* Logo */}
         <div style={{ width:36, height:36, background:T.red, borderRadius:9,
           display:'flex', alignItems:'center', justifyContent:'center', marginBottom:20 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
@@ -1303,7 +1854,6 @@ export default function App() {
           </svg>
         </div>
 
-        {/* Nav */}
         {[
           { ico:'grid',   title:'Board Kanban',  key:'board'     },
           { ico:'user',   title:'Clientes',       key:'clientes'  },
@@ -1336,10 +1886,8 @@ export default function App() {
           style={{ width:8, height:8, borderRadius:'50%', background: online ? '#4CAF50' : '#EF5350' }}/>
       </div>
 
-      {/* ══ CONTEÚDO ══ */}
       <div style={{ flex:1, display:'flex', flexDirection:'column', minHeight:0, overflow:'hidden' }}>
 
-        {/* ── HEADER ── */}
         <div style={{ background:'#fff', borderBottom:'1px solid #E5E7EB', padding:'0 20px',
           height:54, minHeight:54, display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
 
@@ -1349,7 +1897,6 @@ export default function App() {
 
           <div style={{ width:1, height:22, background:'#E5E7EB' }}/>
 
-          {/* Título da view */}
           <div style={{ fontSize:12, fontWeight:700, color:T.sub, textTransform:'uppercase',
             letterSpacing:'0.06em', whiteSpace:'nowrap' }}>
             { view === 'board'     ? 'Board Kanban'
@@ -1360,7 +1907,6 @@ export default function App() {
 
           <div style={{ width:1, height:22, background:'#E5E7EB' }}/>
 
-          {/* Busca */}
           <div style={{ position:'relative', flex:'0 0 260px' }}>
             <div style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#bbb' }}>
               <Ic n="search" s={13}/>
@@ -1378,7 +1924,6 @@ export default function App() {
 
           <div style={{ flex:1 }}/>
 
-          {/* Métricas */}
           <div style={{ display:'flex', gap:18, alignItems:'center' }}>
             <div style={{ textAlign:'center' }}>
               <div style={{ fontSize:15, fontWeight:800, color:'#111' }}>
@@ -1398,7 +1943,6 @@ export default function App() {
 
           <div style={{ width:1, height:22, background:'#E5E7EB' }}/>
 
-          {/* Botão de ação contextual */}
           {(view === 'board' || view === 'clientes') && (
             <button onClick={() => setModal('novo')}
               style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 18px',
@@ -1417,7 +1961,6 @@ export default function App() {
           )}
         </div>
 
-        {/* ── VIEW: BOARD KANBAN ── */}
         {view === 'board' && (
           <div style={{ flex:1, minHeight:0, overflowX:'auto', overflowY:'hidden', padding:'14px 14px 0' }}>
             {loading ? (
@@ -1439,7 +1982,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ── VIEW: CLIENTES (lista com scroll) ── */}
         {view === 'clientes' && (
           <div style={{ flex:1, minHeight:0, overflowY:'auto', padding:'16px 20px' }}>
             {loading ? (
@@ -1451,7 +1993,6 @@ export default function App() {
               </div>
             ) : (
               <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                {/* Cabeçalho da tabela */}
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 140px 140px 120px 90px 80px',
                   padding:'8px 16px', fontSize:10, fontWeight:800, color:'#9ca3af',
                   textTransform:'uppercase', letterSpacing:'0.06em' }}>
@@ -1515,7 +2056,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ── VIEW: ARQUIVOS (todos os clientes) ── */}
         {view === 'arquivos' && (
           <div style={{ flex:1, minHeight:0, overflowY:'auto', padding:'16px 20px' }}>
             {arquivosFiltrados.length === 0 ? (
@@ -1525,7 +2065,6 @@ export default function App() {
               </div>
             ) : (
               <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                {/* Cabeçalho */}
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 180px 90px 110px 80px',
                   padding:'8px 16px', fontSize:10, fontWeight:800, color:'#9ca3af',
                   textTransform:'uppercase', letterSpacing:'0.06em' }}>
@@ -1545,14 +2084,20 @@ export default function App() {
                     onMouseEnter={e => e.currentTarget.style.borderColor = '#1565C0'}
                     onMouseLeave={e => e.currentTarget.style.borderColor = '#EBEBEB'}>
                     <div style={{ display:'flex', alignItems:'center', gap:10, minWidth:0 }}>
-                      <div style={{ width:32, height:32, borderRadius:7, background:'#E3F2FD',
+                      <div style={{ width:32, height:32, borderRadius:7, background: a.nome_original?.endsWith('.docx') || a.nome_original?.endsWith('.doc') ? '#E3F2FD' : '#E3F2FD',
                         display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                        <Ic n="file" s={15} c="#1565C0"/>
+                        {a.nome_original?.endsWith('.docx') || a.nome_original?.endsWith('.doc') ? (
+                          <Ic n="word" s={15} c="#2B579A"/>
+                        ) : (
+                          <Ic n="file" s={15} c="#1565C0"/>
+                        )}
                       </div>
                       <div style={{ minWidth:0 }}>
                         <div style={{ fontSize:13, fontWeight:600, overflow:'hidden',
                           textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{a.nome_original}</div>
-                        <div style={{ fontSize:10, color:'#9ca3af' }}>{a.tipo || 'arquivo'}</div>
+                        <div style={{ fontSize:10, color:'#9ca3af' }}>
+                          {a.nome_original?.endsWith('.docx') || a.nome_original?.endsWith('.doc') ? '📄 Documento Word' : (a.tipo || 'arquivo')}
+                        </div>
                       </div>
                     </div>
                     <span style={{ fontSize:12, color:T.sub, overflow:'hidden',
@@ -1575,10 +2120,8 @@ export default function App() {
           </div>
         )}
 
-        {/* ── VIEW: RELATÓRIO ── */}
         {view === 'relatorio' && (
           <div style={{ flex:1, minHeight:0, overflowY:'auto', padding:'16px 20px' }}>
-            {/* Cards de resumo */}
             <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:20 }}>
               {[
                 { label:'Total de clientes', valor:clientes.length, cor:'#1565C0', bg:'#E3F2FD', ico:'user' },
@@ -1600,7 +2143,6 @@ export default function App() {
               ))}
             </div>
 
-            {/* Distribuição por forma de entrega */}
             <div style={{ background:'#fff', borderRadius:12, padding:'18px 20px', border:'1px solid #EBEBEB', marginBottom:16 }}>
               <div style={{ fontSize:12, fontWeight:800, color:'#111', marginBottom:14 }}>
                 Clientes por forma de entrega
@@ -1623,7 +2165,6 @@ export default function App() {
               })}
             </div>
 
-            {/* Top clientes com mais arquivos */}
             <div style={{ background:'#fff', borderRadius:12, padding:'18px 20px', border:'1px solid #EBEBEB' }}>
               <div style={{ fontSize:12, fontWeight:800, color:'#111', marginBottom:14 }}>
                 Clientes com mais arquivos
@@ -1659,7 +2200,6 @@ export default function App() {
         )}
       </div>
 
-      {/* ══ DRAWER DETALHE ══ */}
       {selecionado && (
         <Drawer
           c={selecionado}
@@ -1674,12 +2214,12 @@ export default function App() {
         />
       )}
 
-      {/* ══ MODAIS ══ */}
       {modal === 'novo'   && <ModalCliente onSave={salvarCliente} onClose={() => setModal(null)} />}
       {modal === 'editar' && <ModalCliente cliente={selecionado} onSave={salvarCliente} onClose={() => setModal(null)} />}
       {config             && <ConfigPanel onClose={() => setConfig(false)} />}
       {fileViewer         && <FileViewer arq={fileViewer} onClose={() => setFileViewer(null)} />}
       {toast              && <Toast msg={toast.msg} type={toast.type} />}
+      {updateInfo         && <UpdateBanner info={updateInfo} />}
     </div>
   )
 }
