@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from './supabase.js'
+import * as mammoth from 'mammoth'
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -129,26 +130,36 @@ function DocxViewer({ url, fileName, onClose }) {
   const contentRef = useRef(null)
 
   useEffect(() => {
-    // Carrega o DOCX usando mammoth.js
+    // Carrega o DOCX usando mammoth.js (bundlado localmente, sem depender de CDN)
+    let cancelled = false
     const loadDocx = async () => {
       try {
         setLoading(true)
-        // Importa mammoth.js
-        const mammoth = await import('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js')
-        
-        const response = await fetch(url)
-        const arrayBuffer = await response.arrayBuffer()
-        
-        const result = await mammoth.convertToHtml({ arrayBuffer })
-        setContent(result.value)
         setError(null)
+
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('Falha ao baixar o arquivo (status ' + response.status + ')')
+        const arrayBuffer = await response.arrayBuffer()
+
+        const result = await mammoth.convertToHtml(
+          { arrayBuffer },
+          { includeDefaultStyleMap: true }
+        )
+
+        if (cancelled) return
+        setContent(result.value)
+
+        if (result.messages?.length) {
+          console.warn('Avisos na conversão do DOCX:', result.messages)
+        }
       } catch (err) {
-        setError('Erro ao carregar o documento: ' + err.message)
+        if (!cancelled) setError('Erro ao carregar o documento: ' + err.message)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     loadDocx()
+    return () => { cancelled = true }
   }, [url])
 
   // Função de pesquisa no conteúdo

@@ -1,6 +1,6 @@
 {
   "name": "tecnoiso-crm",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Sistema de gestão de clientes Tecnoiso",
   "main": "src/main/main.js",
   "scripts": {
@@ -50,6 +50,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
     "electron-updater": "^6.3.9",
+    "mammoth": "^1.8.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
