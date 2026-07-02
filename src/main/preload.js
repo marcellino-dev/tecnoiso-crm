@@ -3,6 +3,8 @@ const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('electronAPI', {
   uploadArquivo: (data) => ipcRenderer.invoke('arquivo:upload', data),
   abrirArquivo: (caminho) => ipcRenderer.invoke('arquivo:abrir', caminho),
+  // Abre um arquivo local ou remoto (URL) direto no programa padrão do Windows
+  abrirArquivoUrl: (url, nome) => ipcRenderer.invoke('arquivo:abrir-url', { url, nome }),
   excluirArquivo: (caminho) => ipcRenderer.invoke('arquivo:excluir', caminho),
   dialogArquivo: () => ipcRenderer.invoke('dialog:arquivo'),
   dialogPasta: () => ipcRenderer.invoke('dialog:pasta'),
