@@ -136,7 +136,7 @@ function ModalCliente({ cliente, onSave, onClose }) {
   const [arquivosPendentes, setArquivosPendentes] = useState([])
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-  const formas  = ['ELETRÔNICO', 'E-MAIL', 'FÍSICO', 'GOOGLE DRIVE', 'ELETRÔNICO / E-MAIL', 'SITE']
+  const formas  = ['ELETRÔNICO', 'E-MAIL', 'FÍSICO', 'GOOGLE DRIVE', 'ELETRÔNICO / E-MAIL']
 
   const inp = (extra = {}) => ({
     width: '100%', border: '1px solid #E0E0E0', borderRadius: 7,

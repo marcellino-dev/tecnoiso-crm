@@ -1,0 +1,27 @@
+directories:
+  output: dist-electron
+  buildResources: build
+appId: com.tecnoiso.crm
+productName: Tecnoiso CRM
+files:
+  - filter:
+      - dist/**/*
+      - src/main/**/*
+publish:
+  provider: github
+  owner: marcellino-dev
+  repo: tecnoiso-crm
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: public/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: Tecnoiso CRM
+linux:
+  target: AppImage
+electronVersion: 33.4.11
